@@ -55,7 +55,7 @@ export DATABASE_URL="sqlite:///./my_custom.db"
 Before running the application for the first time, apply all Alembic migrations to initialise the database schema:
 
 ```bash
-poetry run alembic -c src/qupboard_graphql/alembic.ini upgrade head
+poetry run alembic upgrade head
 ```
 
 ### Running the application
@@ -110,31 +110,31 @@ poetry run pytest --cov=qupboard_graphql --cov-report=term-missing
 ```
 qupboard_graphql/
 ├── pyproject.toml                  # Project metadata and dependencies
+├── alembic.ini                     # Alembic configuration
+├── alembic/
+│   ├── env.py                      # Migration environment (wired to ORM models)
+│   └── versions/                   # Generated migration scripts
 ├── qupboard.db                     # Default SQLite database
-└── src/
-    └── qupboard_graphql/
-        ├── main.py                 # Entrypoint – starts uvicorn on 0.0.0.0:8000
-        ├── config.py               # Pydantic settings (DATABASE_URL, API paths)
-        ├── alembic.ini             # Alembic configuration
-        ├── alembic/
-        │   ├── env.py              # Migration environment (wired to ORM models)
-        │   └── versions/           # Generated migration scripts
-        ├── api/
-        │   ├── app.py              # FastAPI application factory
-        │   ├── graphql.py          # Strawberry schema, types, and GraphQL router
-        │   └── rest.py             # REST router (CRUD for hardware models)
-        ├── db/
-        │   ├── database.py         # SQLAlchemy DeclarativeBase
-        │   ├── models.py           # ORM models mirroring the hardware model schema
-        │   ├── mapper.py           # ORM ↔ Pydantic conversion helpers
-        │   └── session.py          # Engine, SessionLocal, and get_db dependency
-        ├── schemas/
-        │   └── hardware_model.py   # Pydantic schema for HardwareModel
-        └── tests/
-            ├── conftest.py
-            ├── test_graphql.py
-            ├── test_rest.py
-            └── data/               # Sample calibration JSON fixtures
+├── src/
+│   └── qupboard_graphql/
+│       ├── main.py                 # Entrypoint – starts uvicorn on 0.0.0.0:8000
+│       ├── config.py               # Pydantic settings (DATABASE_URL, API paths)
+│       ├── api/
+│       │   ├── app.py              # FastAPI application factory
+│       │   ├── graphql.py          # Strawberry schema, types, and GraphQL router
+│       │   └── rest.py             # REST router (CRUD for hardware models)
+│       ├── db/
+│       │   ├── database.py         # SQLAlchemy DeclarativeBase
+│       │   ├── models.py           # ORM models mirroring the hardware model schema
+│       │   ├── mapper.py           # ORM ↔ Pydantic conversion helpers
+│       │   └── session.py          # Engine, SessionLocal, and get_db dependency
+│       └── schemas/
+│           └── hardware_model.py   # Pydantic schema for HardwareModel
+└── tests/
+    ├── conftest.py
+    ├── test_graphql.py
+    ├── test_rest.py
+    └── data/                       # Sample calibration JSON fixtures
 ```
 
 ---
@@ -368,14 +368,13 @@ The database URL defaults to `sqlite:///./qupboard.db` and can be overridden wit
 
 ### Migrations with Alembic
 
-Schema migrations are managed with [Alembic](https://alembic.sqlalchemy.org/). The Alembic project lives at `src/qupboard_graphql/`:
+Schema migrations are managed with [Alembic](https://alembic.sqlalchemy.org/). The Alembic project lives at the **project root**:
 
 ```
-src/qupboard_graphql/
-├── alembic.ini          # Alembic configuration
-└── alembic/
-    ├── env.py           # Wired to ORM Base metadata and app settings
-    └── versions/        # Migration scripts
+alembic.ini          # Alembic configuration
+alembic/
+├── env.py           # Wired to ORM Base metadata and app settings
+└── versions/        # Migration scripts
 ```
 
 `env.py` automatically reads `DATABASE_URL` from the application settings, so no manual URL configuration is required. `render_as_batch=True` is enabled to support SQLite's limited `ALTER TABLE` capabilities.
@@ -385,35 +384,35 @@ All commands below assume they are run from the **project root**.
 **Apply all pending migrations**
 
 ```bash
-poetry run alembic -c src/qupboard_graphql/alembic.ini upgrade head
+poetry run alembic upgrade head
 ```
 
 **Check whether the database is up to date**
 
 ```bash
-poetry run alembic -c src/qupboard_graphql/alembic.ini check
+poetry run alembic check
 ```
 
 **Show the current revision**
 
 ```bash
-poetry run alembic -c src/qupboard_graphql/alembic.ini current
+poetry run alembic current
 ```
 
 **Generate a new migration after changing ORM models**
 
 ```bash
-poetry run alembic -c src/qupboard_graphql/alembic.ini revision --autogenerate -m "describe_your_change"
+poetry run alembic revision --autogenerate -m "describe_your_change"
 ```
 
 **Downgrade one revision**
 
 ```bash
-poetry run alembic -c src/qupboard_graphql/alembic.ini downgrade -1
+poetry run alembic downgrade -1
 ```
 
 **Stamp an existing database without running migrations** (useful when the schema was created outside of Alembic)
 
 ```bash
-poetry run alembic -c src/qupboard_graphql/alembic.ini stamp head
+poetry run alembic stamp head
 ```
