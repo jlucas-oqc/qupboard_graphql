@@ -27,7 +27,6 @@ from qupboard_graphql.db.models import (
     QubitPulseChannelORM,
     QubitPulseChannelsORM,
     ResonatorORM,
-    ResonatorPhysicalChannelORM,
     ResonatorPulseChannelsORM,
 )
 from qupboard_graphql.db.session import get_db
@@ -40,22 +39,17 @@ mapper = StrawberrySQLAlchemyMapper(
 
 @mapper.type(BaseBandORM)
 class BaseBand:
-    __exclude__ = ["physical_channel", "resonator_physical_channel"]
+    __exclude__ = ["physical_channel"]
 
 
 @mapper.type(IQVoltageBiasORM)
 class IQVoltageBias:
-    __exclude__ = ["physical_channel", "resonator_physical_channel"]
+    __exclude__ = ["physical_channel"]
 
 
 @mapper.type(PhysicalChannelORM)
 class PhysicalChannel:
-    __exclude__ = ["qubit"]
-
-
-@mapper.type(ResonatorPhysicalChannelORM)
-class ResonatorPhysicalChannel:
-    __exclude__ = ["resonator"]
+    __exclude__ = ["qubit", "resonator"]
 
 
 @mapper.type(CalibratablePulseORM)

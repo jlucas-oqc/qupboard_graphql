@@ -24,6 +24,7 @@ class PhysicalChannel(Component):
     iq_voltage_bias: IQVoltageBias
     default_amplitude: int
     switch_box: str
+    swap_readout_iq: bool = False
 
 
 class CalibratablePulse(BaseModel):
@@ -81,10 +82,6 @@ class QubitPulseChannels(BaseModel):
     cross_resonance_cancellation_channels: dict[int, CrossResonanceCancellationPulseChannel]
 
 
-class ResonatorPhysicalChannel(PhysicalChannel):
-    swap_readout_iq: bool = False
-
-
 class ResonatorPulseChannel(PulseChannel): ...
 
 
@@ -112,7 +109,7 @@ class ResonatorPulseChannels(BaseModel):
 
 
 class Resonator(Component):
-    physical_channel: ResonatorPhysicalChannel
+    physical_channel: PhysicalChannel
     pulse_channels: ResonatorPulseChannels
 
 

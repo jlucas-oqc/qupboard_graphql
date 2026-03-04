@@ -149,7 +149,7 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
 
 ```graphql
 {
-  getCalibration(id: "92f4847b-4df2-4c04-9fbc-18c9228b78ab") {
+  getCalibration(id: "46887a09-970b-4149-a633-d4a3a511e070") {
     id
     version
     calibrationId

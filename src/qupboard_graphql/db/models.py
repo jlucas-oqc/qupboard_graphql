@@ -5,7 +5,7 @@ Table hierarchy
 ---------------
 hardware_models
   └─ qubits  (FK → hardware_models)
-       ├─ physical_channels          (FK → qubits)
+       ├─ physical_channels          (FK → qubits OR resonators, discriminated by channel_kind)
        │    └─ basebands             (FK → physical_channels)
        │    └─ iq_voltage_biases     (FK → physical_channels)
        ├─ qubit_pulse_channels       (drive / second_state / freq_shift)
@@ -14,8 +14,7 @@ hardware_models
        │    └─ calibratable_pulses
        ├─ cross_resonance_cancellation_channels (FK → qubits)
        └─ resonators                (FK → qubits)
-            ├─ resonator_physical_channels (FK → resonators)
-            │    └─ basebands / iq_voltage_biases
+            ├─ physical_channels    (channel_kind='resonator', FK → resonators)
             └─ resonator_pulse_channels
                  ├─ measure_pulse_channels  + calibratable_pulse
                  └─ acquire_pulse_channels  + calibratable_acquire
@@ -66,19 +65,9 @@ class BaseBandORM(Base):
     frequency: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
     if_frequency: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
 
-    # back-refs (optional – only one will be populated per row)
     physical_channel_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("physical_channels.uuid"), nullable=True)
-    resonator_physical_channel_uuid: Mapped[UUID | None] = mapped_column(
-        ForeignKey("resonator_physical_channels.uuid"),
-        nullable=True,
-    )
 
-    physical_channel: Mapped["PhysicalChannelORM | None"] = relationship(
-        back_populates="baseband", foreign_keys=[physical_channel_uuid]
-    )
-    resonator_physical_channel: Mapped["ResonatorPhysicalChannelORM | None"] = relationship(
-        back_populates="baseband", foreign_keys=[resonator_physical_channel_uuid]
-    )
+    physical_channel: Mapped["PhysicalChannelORM | None"] = relationship(back_populates="baseband")
 
 
 # ---------------------------------------------------------------------------
@@ -93,78 +82,46 @@ class IQVoltageBiasORM(Base):
     bias: Mapped[str] = mapped_column(String, nullable=False)
 
     physical_channel_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("physical_channels.uuid"), nullable=True)
-    resonator_physical_channel_uuid: Mapped[UUID | None] = mapped_column(
-        ForeignKey("resonator_physical_channels.uuid"),
-        nullable=True,
-    )
 
-    physical_channel: Mapped["PhysicalChannelORM | None"] = relationship(
-        back_populates="iq_voltage_bias", foreign_keys=[physical_channel_uuid]
-    )
-    resonator_physical_channel: Mapped["ResonatorPhysicalChannelORM | None"] = relationship(
-        back_populates="iq_voltage_bias",
-        foreign_keys=[resonator_physical_channel_uuid],
-    )
+    physical_channel: Mapped["PhysicalChannelORM | None"] = relationship(back_populates="iq_voltage_bias")
 
 
 # ---------------------------------------------------------------------------
-# PhysicalChannel  (qubit)
+# PhysicalChannel  (unified – qubit and resonator, discriminated by channel_kind)
 # ---------------------------------------------------------------------------
 
 
 class PhysicalChannelORM(Base):
+    """Covers both qubit PhysicalChannel and resonator PhysicalChannel.
+
+    channel_kind: 'qubit' | 'resonator'
+    swap_readout_iq is only meaningful when channel_kind == 'resonator'.
+    Exactly one of qubit_uuid / resonator_uuid will be non-NULL per row.
+    """
+
     __tablename__ = "physical_channels"
 
     uuid: Mapped[UUID] = mapped_column(primary_key=True)
-    name_index: Mapped[int] = mapped_column(Integer, nullable=False)
-    block_size: Mapped[int] = mapped_column(Integer, nullable=False)
-    default_amplitude: Mapped[int] = mapped_column(Integer, nullable=False)
-    switch_box: Mapped[str] = mapped_column(String, nullable=False)
-
-    qubit_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("qubits.uuid"), nullable=True)
-    qubit: Mapped["QubitORM | None"] = relationship(back_populates="physical_channel")
-
-    baseband: Mapped["BaseBandORM | None"] = relationship(
-        back_populates="physical_channel",
-        foreign_keys=[BaseBandORM.physical_channel_uuid],
-        cascade="all, delete-orphan",
-        uselist=False,
-    )
-    iq_voltage_bias: Mapped["IQVoltageBiasORM | None"] = relationship(
-        back_populates="physical_channel",
-        foreign_keys=[IQVoltageBiasORM.physical_channel_uuid],
-        cascade="all, delete-orphan",
-        uselist=False,
-    )
-
-
-# ---------------------------------------------------------------------------
-# ResonatorPhysicalChannel
-# ---------------------------------------------------------------------------
-
-
-class ResonatorPhysicalChannelORM(Base):
-    __tablename__ = "resonator_physical_channels"
-
-    uuid: Mapped[UUID] = mapped_column(primary_key=True)
+    channel_kind: Mapped[str] = mapped_column(String, nullable=False)  # 'qubit' | 'resonator'
     name_index: Mapped[int] = mapped_column(Integer, nullable=False)
     block_size: Mapped[int] = mapped_column(Integer, nullable=False)
     default_amplitude: Mapped[int] = mapped_column(Integer, nullable=False)
     switch_box: Mapped[str] = mapped_column(String, nullable=False)
     swap_readout_iq: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    qubit_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("qubits.uuid"), nullable=True)
+    qubit: Mapped["QubitORM | None"] = relationship(back_populates="physical_channel")
+
     resonator_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("resonators.uuid"), nullable=True)
     resonator: Mapped["ResonatorORM | None"] = relationship(back_populates="physical_channel")
 
     baseband: Mapped["BaseBandORM | None"] = relationship(
-        back_populates="resonator_physical_channel",
-        foreign_keys=[BaseBandORM.resonator_physical_channel_uuid],
+        back_populates="physical_channel",
         cascade="all, delete-orphan",
         uselist=False,
     )
     iq_voltage_bias: Mapped["IQVoltageBiasORM | None"] = relationship(
-        back_populates="resonator_physical_channel",
-        foreign_keys=[IQVoltageBiasORM.resonator_physical_channel_uuid],
+        back_populates="physical_channel",
         cascade="all, delete-orphan",
         uselist=False,
     )
@@ -487,7 +444,7 @@ class ResonatorORM(Base):
     qubit_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("qubits.uuid"), nullable=True)
     qubit: Mapped["QubitORM | None"] = relationship(back_populates="resonator")
 
-    physical_channel: Mapped["ResonatorPhysicalChannelORM | None"] = relationship(
+    physical_channel: Mapped["PhysicalChannelORM | None"] = relationship(
         back_populates="resonator", cascade="all, delete-orphan", uselist=False
     )
     pulse_channels: Mapped["ResonatorPulseChannelsORM | None"] = relationship(

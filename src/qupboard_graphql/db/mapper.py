@@ -21,7 +21,6 @@ from qupboard_graphql.schemas.hardware_model import (
     Qubit,
     QubitPulseChannels,
     Resonator,
-    ResonatorPhysicalChannel,
     ResonatorPulseChannels,
     SecondStatePulseChannel,
 )
@@ -41,7 +40,6 @@ from qupboard_graphql.db.models import (
     QubitPulseChannelORM,
     QubitPulseChannelsORM,
     ResonatorORM,
-    ResonatorPhysicalChannelORM,
     ResonatorPulseChannelsORM,
 )
 
@@ -66,6 +64,7 @@ def _iq_bias_orm(bias: IQVoltageBias) -> IQVoltageBiasORM:
 def _physical_channel_orm(pc: PhysicalChannel) -> PhysicalChannelORM:
     return PhysicalChannelORM(
         uuid=pc.uuid,
+        channel_kind="qubit",
         name_index=pc.name_index,
         block_size=pc.block_size,
         default_amplitude=pc.default_amplitude,
@@ -80,10 +79,11 @@ def _physical_channel_orm(pc: PhysicalChannel) -> PhysicalChannelORM:
 
 
 def _resonator_physical_channel_orm(
-    rpc: ResonatorPhysicalChannel,
-) -> ResonatorPhysicalChannelORM:
-    return ResonatorPhysicalChannelORM(
+    rpc: PhysicalChannel,
+) -> PhysicalChannelORM:
+    return PhysicalChannelORM(
         uuid=rpc.uuid,
+        channel_kind="resonator",
         name_index=rpc.name_index,
         block_size=rpc.block_size,
         default_amplitude=rpc.default_amplitude,
@@ -309,20 +309,8 @@ def _iq_bias_from_orm(orm) -> IQVoltageBias:
     return IQVoltageBias(bias=orm.bias)
 
 
-def _physical_channel_from_orm(orm) -> PhysicalChannel:
+def _physical_channel_from_orm(orm: PhysicalChannelORM) -> PhysicalChannel:
     return PhysicalChannel(
-        uuid=orm.uuid,
-        name_index=orm.name_index,
-        block_size=orm.block_size,
-        default_amplitude=orm.default_amplitude,
-        switch_box=orm.switch_box,
-        baseband=_baseband_from_orm(orm.baseband),
-        iq_voltage_bias=_iq_bias_from_orm(orm.iq_voltage_bias),
-    )
-
-
-def _resonator_physical_channel_from_orm(orm) -> ResonatorPhysicalChannel:
-    return ResonatorPhysicalChannel(
         uuid=orm.uuid,
         name_index=orm.name_index,
         block_size=orm.block_size,
@@ -352,7 +340,7 @@ def _resonator_from_orm(orm) -> Resonator:
     apc = orm.pulse_channels.acquire
     return Resonator(
         uuid=orm.uuid,
-        physical_channel=_resonator_physical_channel_from_orm(orm.physical_channel),
+        physical_channel=_physical_channel_from_orm(orm.physical_channel),
         pulse_channels=ResonatorPulseChannels(
             measure=MeasurePulseChannel(
                 uuid=mpc.uuid,
