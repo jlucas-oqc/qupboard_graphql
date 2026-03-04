@@ -33,6 +33,7 @@ from sqlalchemy import (
     Float,
     ForeignKey,
     Integer,
+    JSON,
     String,
     Text,
 )
@@ -52,8 +53,7 @@ class HardwareModelORM(Base):
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
     version: Mapped[str] = mapped_column(String, nullable=False)
     calibration_id: Mapped[str] = mapped_column(String, nullable=False)
-    # logical_connectivity stored as JSON text (dict[str, list[int]])
-    logical_connectivity: Mapped[str] = mapped_column(Text, nullable=False)
+    logical_connectivity: Mapped[dict] = mapped_column(JSON, nullable=False)
 
     qubits: Mapped[list["QubitORM"]] = relationship(back_populates="hardware_model", cascade="all, delete-orphan")
 

@@ -316,7 +316,7 @@ def hardware_model_to_orm(model: HardwareModel) -> HardwareModelORM:
     return HardwareModelORM(
         version=model.version,
         calibration_id=model.calibration_id,
-        logical_connectivity=json.dumps(model.logical_connectivity),
+        logical_connectivity=model.logical_connectivity,
         qubits=qubit_orms,
     )
 
@@ -521,6 +521,6 @@ def hardware_model_from_orm(orm: HardwareModelORM) -> HardwareModel:
     return HardwareModel(
         version=orm.version,
         calibration_id=orm.calibration_id,
-        logical_connectivity=json.loads(orm.logical_connectivity),
+        logical_connectivity=orm.logical_connectivity,
         qubits=qubits,
     )
