@@ -29,10 +29,12 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                             directXPi
                             physicalChannel {
                                 uuid
+                                channelKind
                                 nameIndex
                                 blockSize
                                 defaultAmplitude
                                 switchBox
+                                swapReadoutIq
                                 baseband {
                                     uuid
                                     frequency
@@ -47,6 +49,11 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                 uuid
                                 drive {
                                     uuid
+                                    frequency
+                                    imbalance
+                                    phaseIqOffset
+                                    scaleReal
+                                    scaleImag
                                     pulse {
                                         id
                                         waveformType
@@ -83,6 +90,17 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                     fsActive
                                     fsAmp
                                     fsPhase
+                                    pulse {
+                                        id
+                                        waveformType
+                                        width
+                                        amp
+                                        phase
+                                        drag
+                                        rise
+                                        ampSetup
+                                        stdDev
+                                    }
                                 }
                                 freqShift {
                                     uuid
@@ -98,11 +116,33 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                     fsAmp
                                     fsPhase
                                 }
+                                reset {
+                                    uuid
+                                    resetKind
+                                    frequency
+                                    imbalance
+                                    phaseIqOffset
+                                    scaleReal
+                                    scaleImag
+                                    delay
+                                    pulse {
+                                        id
+                                        waveformType
+                                        width
+                                        amp
+                                        phase
+                                        drag
+                                        rise
+                                        ampSetup
+                                        stdDev
+                                    }
+                                }
                             }
                             crossResonanceChannels {
                                 edges {
                                     node {
                                         uuid
+                                        role
                                         auxiliaryQubit
                                         frequency
                                         imbalance
@@ -127,6 +167,7 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                 edges {
                                     node {
                                         uuid
+                                        role
                                         auxiliaryQubit
                                         frequency
                                         imbalance
@@ -140,6 +181,7 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                 uuid
                                 physicalChannel {
                                     uuid
+                                    channelKind
                                     nameIndex
                                     blockSize
                                     defaultAmplitude
@@ -159,6 +201,7 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                     uuid
                                     measure {
                                         uuid
+                                        role
                                         frequency
                                         imbalance
                                         phaseIqOffset
@@ -178,6 +221,7 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                     }
                                     acquire {
                                         uuid
+                                        role
                                         frequency
                                         imbalance
                                         phaseIqOffset
@@ -189,6 +233,67 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                             width
                                             sync
                                             useWeights
+                                        }
+                                    }
+                                    reset {
+                                        uuid
+                                        resetKind
+                                        frequency
+                                        imbalance
+                                        phaseIqOffset
+                                        scaleReal
+                                        scaleImag
+                                        delay
+                                        pulse {
+                                            id
+                                            waveformType
+                                            width
+                                            amp
+                                            phase
+                                            drag
+                                            rise
+                                            ampSetup
+                                            stdDev
+                                        }
+                                    }
+                                }
+                            }
+                            xPi2Comp {
+                                uuid
+                                phaseCompXPi2
+                            }
+                            zxPi4Comps {
+                                edges {
+                                    node {
+                                        uuid
+                                        auxiliaryQubit
+                                        phaseCompTargetZxPi4
+                                        pulseZxPi4TargetRotaryAmp
+                                        precompActive
+                                        postcompActive
+                                        useSecondState
+                                        useRotary
+                                        pulsePrecomp {
+                                            id
+                                            waveformType
+                                            width
+                                            amp
+                                            phase
+                                            drag
+                                            rise
+                                            ampSetup
+                                            stdDev
+                                        }
+                                        pulsePostcomp {
+                                            id
+                                            waveformType
+                                            width
+                                            amp
+                                            phase
+                                            drag
+                                            rise
+                                            ampSetup
+                                            stdDev
                                         }
                                     }
                                 }
@@ -212,6 +317,29 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
     calibration = data["data"]["getCalibration"]
     assert calibration is not None
     assert calibration["id"] == hardware_model_uuid
+
+    # Spot-check structure is populated
+    qubit_nodes = calibration["qubits"]["edges"]
+    assert len(qubit_nodes) > 0
+
+    first_qubit = qubit_nodes[0]["node"]
+    drive = first_qubit["pulseChannels"]["drive"]
+    assert drive["frequency"] is not None
+    assert drive["pulse"] is not None
+
+    second_state = first_qubit["pulseChannels"]["secondState"]
+    assert second_state["pulse"] is not None
+
+    qubit_reset = first_qubit["pulseChannels"]["reset"]
+    assert qubit_reset["resetKind"] == "qubit"
+    assert qubit_reset["pulse"] is not None
+
+    resonator_reset = first_qubit["resonator"]["pulseChannels"]["reset"]
+    assert resonator_reset["resetKind"] == "resonator"
+    assert resonator_reset["pulse"] is not None
+
+    assert first_qubit["xPi2Comp"] is not None
+    assert len(first_qubit["zxPi4Comps"]["edges"]) > 0
 
 
 def test_get_all_hardware_model_ids(test_client: TestClient, hardware_model_uuid: str):

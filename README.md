@@ -165,10 +165,12 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
           directXPi
           physicalChannel {
             uuid
+            channelKind
             nameIndex
             blockSize
             defaultAmplitude
             switchBox
+            swapReadoutIq
             baseband {
               uuid
               frequency
@@ -183,6 +185,11 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
             uuid
             drive {
               uuid
+              frequency
+              imbalance
+              phaseIqOffset
+              scaleReal
+              scaleImag
               pulse {
                 id
                 waveformType
@@ -219,6 +226,17 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
               fsActive
               fsAmp
               fsPhase
+              pulse {
+                id
+                waveformType
+                width
+                amp
+                phase
+                drag
+                rise
+                ampSetup
+                stdDev
+              }
             }
             freqShift {
               uuid
@@ -234,11 +252,33 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
               fsAmp
               fsPhase
             }
+            reset {
+              uuid
+              resetKind
+              frequency
+              imbalance
+              phaseIqOffset
+              scaleReal
+              scaleImag
+              delay
+              pulse {
+                id
+                waveformType
+                width
+                amp
+                phase
+                drag
+                rise
+                ampSetup
+                stdDev
+              }
+            }
           }
           crossResonanceChannels {
             edges {
               node {
                 uuid
+                role
                 auxiliaryQubit
                 frequency
                 imbalance
@@ -263,6 +303,7 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
             edges {
               node {
                 uuid
+                role
                 auxiliaryQubit
                 frequency
                 imbalance
@@ -276,6 +317,7 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
             uuid
             physicalChannel {
               uuid
+              channelKind
               nameIndex
               blockSize
               defaultAmplitude
@@ -295,6 +337,7 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
               uuid
               measure {
                 uuid
+                role
                 frequency
                 imbalance
                 phaseIqOffset
@@ -314,6 +357,7 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
               }
               acquire {
                 uuid
+                role
                 frequency
                 imbalance
                 phaseIqOffset
@@ -325,6 +369,67 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
                   width
                   sync
                   useWeights
+                }
+              }
+              reset {
+                uuid
+                resetKind
+                frequency
+                imbalance
+                phaseIqOffset
+                scaleReal
+                scaleImag
+                delay
+                pulse {
+                  id
+                  waveformType
+                  width
+                  amp
+                  phase
+                  drag
+                  rise
+                  ampSetup
+                  stdDev
+                }
+              }
+            }
+          }
+          xPi2Comp {
+            uuid
+            phaseCompXPi2
+          }
+          zxPi4Comps {
+            edges {
+              node {
+                uuid
+                auxiliaryQubit
+                phaseCompTargetZxPi4
+                pulseZxPi4TargetRotaryAmp
+                precompActive
+                postcompActive
+                useSecondState
+                useRotary
+                pulsePrecomp {
+                  id
+                  waveformType
+                  width
+                  amp
+                  phase
+                  drag
+                  rise
+                  ampSetup
+                  stdDev
+                }
+                pulsePostcomp {
+                  id
+                  waveformType
+                  width
+                  amp
+                  phase
+                  drag
+                  rise
+                  ampSetup
+                  stdDev
                 }
               }
             }
@@ -400,15 +505,21 @@ hardware_models
     │   ├── basebands
     │   └── iq_voltage_biases
     ├── qubit_pulse_channels
-    │   ├── drive_pulse_channels        + calibratable_pulses
-    │   └── qubit_pulse_channels_base   (role = 'second_state' | 'freq_shift')
+    │   ├── drive_pulse_channels        + calibratable_pulses (pulse / pulse_x_pi)
+    │   ├── qubit_pulse_channels_base   (role = 'second_state' | 'freq_shift')
+    │   │   └── calibratable_pulses     (second_state only)
+    │   └── reset_pulse_channels        (reset_kind = 'qubit') + calibratable_pulses
     ├── cross_resonance_channels        (role = 'cr' | 'crc')
     │   └── calibratable_pulses         (role='cr' rows only)
+    ├── x_pi_2_comps
+    ├── zx_pi_4_comps                   (one per CR pair)
+    │   └── calibratable_pulses         (pulse_precomp / pulse_postcomp, nullable)
     └── resonators
         └── resonator_pulse_channels
-            └── resonator_pulse_channels_base  (role = 'measure' | 'acquire')
-                ├── calibratable_pulses         (role='measure' rows only)
-                └── calibratable_acquires       (role='acquire' rows only)
+            ├── resonator_pulse_channels_base  (role = 'measure' | 'acquire')
+            │   ├── calibratable_pulses         (role='measure' rows only)
+            │   └── calibratable_acquires       (role='acquire' rows only)
+            └── reset_pulse_channels    (reset_kind = 'resonator') + calibratable_pulses
 ```
 
 The database URL defaults to `sqlite:///./qupboard.db` and can be overridden with the `DATABASE_URL` environment variable.

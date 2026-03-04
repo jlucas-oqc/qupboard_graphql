@@ -8,16 +8,26 @@ hardware_models
        ├─ physical_channels          (FK → qubits OR resonators, discriminated by channel_kind)
        │    └─ basebands             (FK → physical_channels)
        │    └─ iq_voltage_biases     (FK → physical_channels)
-       ├─ qubit_pulse_channels       (drive / second_state / freq_shift)
-       │    └─ calibratable_pulses   (FK → qubit_pulse_channels)
+       ├─ qubit_pulse_channels       (container – drive / second_state / freq_shift / reset)
+       │    ├─ drive_pulse_channels  (FK → qubit_pulse_channels)
+       │    │    └─ calibratable_pulses  (pulse / pulse_x_pi)
+       │    ├─ qubit_pulse_channels_base  (role = 'second_state' | 'freq_shift')
+       │    │    └─ calibratable_pulses   (second_state pulse only)
+       │    └─ reset_pulse_channels  (reset_kind = 'qubit', FK → qubit_pulse_channels)
+       │         └─ calibratable_pulses
        ├─ cross_resonance_channels   (FK → qubits, role = 'cr' | 'crc')
        │    └─ calibratable_pulses   (role='cr' rows only)
+       ├─ x_pi_2_comps               (FK → qubits, one per qubit)
+       ├─ zx_pi_4_comps              (FK → qubits, one per CR pair)
+       │    └─ calibratable_pulses   (precomp / postcomp, nullable)
        └─ resonators                (FK → qubits)
             ├─ physical_channels    (channel_kind='resonator', FK → resonators)
-            └─ resonator_pulse_channels
-                 └─ resonator_pulse_channels_base  (role = 'measure' | 'acquire')
-                      ├─ calibratable_pulses       (role='measure' rows only)
-                      └─ calibratable_acquires     (role='acquire' rows only)
+            └─ resonator_pulse_channels  (container – measure / acquire / reset)
+                 ├─ resonator_pulse_channels_base  (role = 'measure' | 'acquire')
+                 │    ├─ calibratable_pulses       (role='measure' rows only)
+                 │    └─ calibratable_acquires     (role='acquire' rows only)
+                 └─ reset_pulse_channels  (reset_kind = 'resonator', FK → resonator_pulse_channels)
+                      └─ calibratable_pulses
 """
 
 import math
@@ -153,12 +163,28 @@ class CalibratablePulseORM(Base):
         ForeignKey("drive_pulse_channels.uuid"),
         nullable=True,
     )
+    second_state_pulse_channel_uuid: Mapped[UUID | None] = mapped_column(
+        ForeignKey("qubit_pulse_channels_base.uuid"),
+        nullable=True,
+    )
     cr_channel_uuid: Mapped[UUID | None] = mapped_column(
         ForeignKey("cross_resonance_channels.uuid"),
         nullable=True,
     )
     measure_pulse_channel_uuid: Mapped[UUID | None] = mapped_column(
         ForeignKey("resonator_pulse_channels_base.uuid"),
+        nullable=True,
+    )
+    reset_pulse_channel_uuid: Mapped[UUID | None] = mapped_column(
+        ForeignKey("reset_pulse_channels.uuid"),
+        nullable=True,
+    )
+    zx_pi_4_comp_precomp_uuid: Mapped[UUID | None] = mapped_column(
+        ForeignKey("zx_pi_4_comps.uuid"),
+        nullable=True,
+    )
+    zx_pi_4_comp_postcomp_uuid: Mapped[UUID | None] = mapped_column(
+        ForeignKey("zx_pi_4_comps.uuid"),
         nullable=True,
     )
 
@@ -170,6 +196,10 @@ class CalibratablePulseORM(Base):
         back_populates="pulse_x_pi",
         foreign_keys=[drive_pulse_channel_pulse_x_pi_uuid],
     )
+    second_state_pulse_channel: Mapped["QubitPulseChannelORM | None"] = relationship(
+        back_populates="pulse",
+        foreign_keys=[second_state_pulse_channel_uuid],
+    )
     cr_channel: Mapped["CrossResonanceChannelORM | None"] = relationship(
         back_populates="zx_pi_4_pulse",
         foreign_keys=[cr_channel_uuid],
@@ -177,6 +207,20 @@ class CalibratablePulseORM(Base):
     measure_pulse_channel: Mapped["ResonatorPulseChannelORM | None"] = relationship(
         back_populates="pulse",
         foreign_keys=[measure_pulse_channel_uuid],
+    )
+    reset_pulse_channel: Mapped["ResetPulseChannelORM | None"] = relationship(
+        back_populates="pulse",
+        foreign_keys=[reset_pulse_channel_uuid],
+    )
+    zx_pi_4_comp_precomp: Mapped["ZxPi4CompORM | None"] = relationship(
+        back_populates="pulse_precomp",
+        foreign_keys=[zx_pi_4_comp_precomp_uuid],
+        overlaps="zx_pi_4_comp_postcomp",
+    )
+    zx_pi_4_comp_postcomp: Mapped["ZxPi4CompORM | None"] = relationship(
+        back_populates="pulse_postcomp",
+        foreign_keys=[zx_pi_4_comp_postcomp_uuid],
+        overlaps="zx_pi_4_comp_precomp",
     )
 
 
@@ -189,6 +233,11 @@ class DrivePulseChannelORM(Base):
     __tablename__ = "drive_pulse_channels"
 
     uuid: Mapped[UUID] = mapped_column(primary_key=True)
+    frequency: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    imbalance: Mapped[float] = mapped_column(Float, default=1.0)
+    phase_iq_offset: Mapped[float] = mapped_column(Float, default=0.0)
+    scale_real: Mapped[float] = mapped_column(Float, default=1.0)
+    scale_imag: Mapped[float] = mapped_column(Float, default=0.0)
 
     qubit_pulse_channels_uuid: Mapped[UUID | None] = mapped_column(
         ForeignKey("qubit_pulse_channels.uuid"), nullable=True
@@ -238,6 +287,13 @@ class QubitPulseChannelORM(Base):
         ForeignKey("qubit_pulse_channels.uuid"), nullable=True
     )
 
+    pulse: Mapped["CalibratablePulseORM | None"] = relationship(
+        back_populates="second_state_pulse_channel",
+        foreign_keys="CalibratablePulseORM.second_state_pulse_channel_uuid",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
 
 # ---------------------------------------------------------------------------
 # QubitPulseChannels  (container – one per Qubit)
@@ -278,6 +334,11 @@ class QubitPulseChannelsORM(Base):
         viewonly=False,
         foreign_keys=[QubitPulseChannelORM.qubit_pulse_channels_uuid],
         overlaps="second_state",
+    )
+    reset: Mapped["ResetPulseChannelORM | None"] = relationship(
+        back_populates="qubit_pulse_channels",
+        cascade="all, delete-orphan",
+        uselist=False,
     )
 
 
@@ -419,6 +480,107 @@ class ResonatorPulseChannelsORM(Base):
         viewonly=False,
         overlaps="measure,resonator_pulse_channels",
     )
+    reset: Mapped["ResetPulseChannelORM | None"] = relationship(
+        back_populates="resonator_pulse_channels",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+
+# ---------------------------------------------------------------------------
+# ResetPulseChannel  (qubit reset and resonator reset, discriminated by reset_kind)
+# ---------------------------------------------------------------------------
+
+
+class ResetPulseChannelORM(Base):
+    """Covers qubit-side and resonator-side reset pulse channels.
+
+    reset_kind: 'qubit' | 'resonator'
+    Exactly one of qubit_pulse_channels_uuid / resonator_pulse_channels_uuid will be non-NULL per row.
+    """
+
+    __tablename__ = "reset_pulse_channels"
+
+    uuid: Mapped[UUID] = mapped_column(primary_key=True)
+    reset_kind: Mapped[str] = mapped_column(String, nullable=False)  # 'qubit' | 'resonator'
+    frequency: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    imbalance: Mapped[float] = mapped_column(Float, default=1.0)
+    phase_iq_offset: Mapped[float] = mapped_column(Float, default=0.0)
+    scale_real: Mapped[float] = mapped_column(Float, default=1.0)
+    scale_imag: Mapped[float] = mapped_column(Float, default=0.0)
+    delay: Mapped[float] = mapped_column(Float, default=0.0)
+
+    qubit_pulse_channels_uuid: Mapped[UUID | None] = mapped_column(
+        ForeignKey("qubit_pulse_channels.uuid"), nullable=True
+    )
+    qubit_pulse_channels: Mapped["QubitPulseChannelsORM | None"] = relationship(
+        back_populates="reset",
+    )
+
+    resonator_pulse_channels_uuid: Mapped[UUID | None] = mapped_column(
+        ForeignKey("resonator_pulse_channels.uuid"), nullable=True
+    )
+    resonator_pulse_channels: Mapped["ResonatorPulseChannelsORM | None"] = relationship(
+        back_populates="reset",
+    )
+
+    pulse: Mapped["CalibratablePulseORM | None"] = relationship(
+        back_populates="reset_pulse_channel",
+        foreign_keys="CalibratablePulseORM.reset_pulse_channel_uuid",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+
+# ---------------------------------------------------------------------------
+# XPi2Comp
+# ---------------------------------------------------------------------------
+
+
+class XPi2CompORM(Base):
+    __tablename__ = "x_pi_2_comps"
+
+    uuid: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    phase_comp_x_pi_2: Mapped[float] = mapped_column(Float, default=0.0)
+
+    qubit_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("qubits.uuid"), nullable=True)
+    qubit: Mapped["QubitORM | None"] = relationship(back_populates="x_pi_2_comp")
+
+
+# ---------------------------------------------------------------------------
+# ZxPi4Comp  (one per CR pair, keyed by auxiliary_qubit)
+# ---------------------------------------------------------------------------
+
+
+class ZxPi4CompORM(Base):
+    __tablename__ = "zx_pi_4_comps"
+
+    uuid: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    auxiliary_qubit: Mapped[int] = mapped_column(Integer, nullable=False)
+    phase_comp_target_zx_pi_4: Mapped[float] = mapped_column(Float, default=0.0)
+    pulse_zx_pi_4_target_rotary_amp: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    precomp_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    postcomp_active: Mapped[bool] = mapped_column(Boolean, default=False)
+    use_second_state: Mapped[bool] = mapped_column(Boolean, default=False)
+    use_rotary: Mapped[bool] = mapped_column(Boolean, default=False)
+
+    qubit_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("qubits.uuid"), nullable=True)
+    qubit: Mapped["QubitORM | None"] = relationship(back_populates="zx_pi_4_comps")
+
+    pulse_precomp: Mapped["CalibratablePulseORM | None"] = relationship(
+        back_populates="zx_pi_4_comp_precomp",
+        foreign_keys="CalibratablePulseORM.zx_pi_4_comp_precomp_uuid",
+        cascade="all, delete-orphan",
+        uselist=False,
+        overlaps="zx_pi_4_comp_postcomp",
+    )
+    pulse_postcomp: Mapped["CalibratablePulseORM | None"] = relationship(
+        back_populates="zx_pi_4_comp_postcomp",
+        foreign_keys="CalibratablePulseORM.zx_pi_4_comp_postcomp_uuid",
+        cascade="all, delete-orphan",
+        uselist=False,
+        overlaps="zx_pi_4_comp_precomp",
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -488,3 +650,7 @@ class QubitORM(Base):
         viewonly=False,
         overlaps="cross_resonance_channels,qubit",
     )
+    x_pi_2_comp: Mapped["XPi2CompORM | None"] = relationship(
+        back_populates="qubit", cascade="all, delete-orphan", uselist=False
+    )
+    zx_pi_4_comps: Mapped[list["ZxPi4CompORM"]] = relationship(back_populates="qubit", cascade="all, delete-orphan")

@@ -38,16 +38,16 @@ class CalibratablePulse(BaseModel):
     std_dev: float = 0.0
 
 
-class DrivePulseChannel(Component):
-    pulse: CalibratablePulse
-    pulse_x_pi: CalibratablePulse | None
-
-
 class PulseChannel(Component):
     frequency: float = math.nan
     imbalance: float = 1.0
     phase_iq_offset: float = 0.0
     scale: complex | float = 1.0 + 0.0j
+
+
+class DrivePulseChannel(PulseChannel):
+    pulse: CalibratablePulse
+    pulse_x_pi: CalibratablePulse | None
 
 
 class QubitPulseChannel(PulseChannel): ...
@@ -56,6 +56,7 @@ class QubitPulseChannel(PulseChannel): ...
 class SecondStatePulseChannel(QubitPulseChannel):
     active: bool = False
     delay: float = 0.0
+    pulse: CalibratablePulse | None = None
 
 
 class FreqShiftPulseChannel(QubitPulseChannel):
@@ -73,10 +74,16 @@ class CrossResonanceCancellationPulseChannel(QubitPulseChannel):
     auxiliary_qubit: int
 
 
+class ResetPulseChannel(PulseChannel):
+    delay: float = 0.0
+    pulse: CalibratablePulse
+
+
 class QubitPulseChannels(BaseModel):
     drive: DrivePulseChannel
     second_state: SecondStatePulseChannel
     freq_shift: FreqShiftPulseChannel
+    reset: ResetPulseChannel
 
     cross_resonance_channels: dict[int, CrossResonancePulseChannel]
     cross_resonance_cancellation_channels: dict[int, CrossResonanceCancellationPulseChannel]
@@ -106,11 +113,27 @@ class MeasureAcquirePulseChannel(MeasurePulseChannel, AcquirePulseChannel): ...
 class ResonatorPulseChannels(BaseModel):
     measure: MeasurePulseChannel
     acquire: AcquirePulseChannel
+    reset: ResetPulseChannel
 
 
 class Resonator(Component):
     physical_channel: PhysicalChannel
     pulse_channels: ResonatorPulseChannels
+
+
+class XPi2Comp(BaseModel):
+    phase_comp_x_pi_2: float = 0.0
+
+
+class ZxPi4Comp(BaseModel):
+    pulse_precomp_target_zx_pi_4: CalibratablePulse | None = None
+    pulse_postcomp_target_zx_pi_4: CalibratablePulse | None = None
+    phase_comp_target_zx_pi_4: float = 0.0
+    pulse_zx_pi_4_target_rotary_amp: float | None = None
+    precomp_active: bool = False
+    postcomp_active: bool = False
+    use_second_state: bool = False
+    use_rotary: bool = False
 
 
 class Qubit(BaseModel):
@@ -124,6 +147,9 @@ class Qubit(BaseModel):
     discriminator: complex | float = 0.0
 
     direct_x_pi: bool = False
+
+    x_pi_2_comp: XPi2Comp = Field(default_factory=XPi2Comp)
+    zx_pi_4_comp: dict[int, ZxPi4Comp] = Field(default_factory=dict)
 
 
 class HardwareModel(BaseModel):

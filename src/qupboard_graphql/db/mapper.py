@@ -21,8 +21,11 @@ from qupboard_graphql.schemas.hardware_model import (
     Qubit,
     QubitPulseChannels,
     Resonator,
+    ResetPulseChannel,
     ResonatorPulseChannels,
     SecondStatePulseChannel,
+    XPi2Comp,
+    ZxPi4Comp,
 )
 from qupboard_graphql.db.models import (
     BaseBandORM,
@@ -39,6 +42,9 @@ from qupboard_graphql.db.models import (
     ResonatorORM,
     ResonatorPulseChannelORM,
     ResonatorPulseChannelsORM,
+    ResetPulseChannelORM,
+    XPi2CompORM,
+    ZxPi4CompORM,
 )
 
 
@@ -122,6 +128,21 @@ def _nan_to_none(value: float) -> float | None:
         return value
 
 
+def _reset_pulse_channel_orm(rpc: ResetPulseChannel, reset_kind: str) -> ResetPulseChannelORM:
+    real, imag = _scale_parts(rpc.scale)
+    return ResetPulseChannelORM(
+        uuid=rpc.uuid,
+        reset_kind=reset_kind,
+        frequency=_nan_to_none(rpc.frequency),
+        imbalance=rpc.imbalance,
+        phase_iq_offset=rpc.phase_iq_offset,
+        scale_real=real,
+        scale_imag=imag,
+        delay=rpc.delay,
+        pulse=_pulse_orm(rpc.pulse),
+    )
+
+
 def _measure_pulse_channel_orm(mpc: MeasurePulseChannel) -> ResonatorPulseChannelORM:
     real, imag = _scale_parts(mpc.scale)
     return ResonatorPulseChannelORM(
@@ -158,7 +179,22 @@ def _resonator_orm(resonator: Resonator) -> ResonatorORM:
             uuid=resonator.pulse_channels.acquire.uuid,  # reuse one UUID for container
             measure=_measure_pulse_channel_orm(resonator.pulse_channels.measure),
             acquire=_acquire_pulse_channel_orm(resonator.pulse_channels.acquire),
+            reset=_reset_pulse_channel_orm(resonator.pulse_channels.reset, "resonator"),
         ),
+    )
+
+
+def _zx_pi4_comp_orm(auxiliary_qubit: int, comp: ZxPi4Comp) -> ZxPi4CompORM:
+    return ZxPi4CompORM(
+        auxiliary_qubit=auxiliary_qubit,
+        phase_comp_target_zx_pi_4=comp.phase_comp_target_zx_pi_4,
+        pulse_zx_pi_4_target_rotary_amp=comp.pulse_zx_pi_4_target_rotary_amp,
+        precomp_active=comp.precomp_active,
+        postcomp_active=comp.postcomp_active,
+        use_second_state=comp.use_second_state,
+        use_rotary=comp.use_rotary,
+        pulse_precomp=_pulse_orm(comp.pulse_precomp_target_zx_pi_4) if comp.pulse_precomp_target_zx_pi_4 else None,
+        pulse_postcomp=_pulse_orm(comp.pulse_postcomp_target_zx_pi_4) if comp.pulse_postcomp_target_zx_pi_4 else None,
     )
 
 
@@ -172,8 +208,14 @@ def _qubit_pulse_channels_orm(
     list[CrossResonanceChannelORM],
 ]:
     drive = qubit_pulse_channels.drive
+    drive_real, drive_imag = _scale_parts(drive.scale)
     drive_orm = DrivePulseChannelORM(
         uuid=drive.uuid,
+        frequency=_nan_to_none(drive.frequency),
+        imbalance=drive.imbalance,
+        phase_iq_offset=drive.phase_iq_offset,
+        scale_real=drive_real,
+        scale_imag=drive_imag,
         pulse=_pulse_orm(drive.pulse),
         pulse_x_pi=_pulse_orm(drive.pulse_x_pi) if drive.pulse_x_pi is not None else None,
     )
@@ -190,6 +232,7 @@ def _qubit_pulse_channels_orm(
         scale_imag=ss_imag,
         ss_active=ss.active,
         ss_delay=ss.delay,
+        pulse=_pulse_orm(ss.pulse) if ss.pulse is not None else None,
     )
 
     fs: FreqShiftPulseChannel = qubit_pulse_channels.freq_shift
@@ -211,6 +254,7 @@ def _qubit_pulse_channels_orm(
         drive=drive_orm,
         second_state=ss_orm,
         freq_shift=fs_orm,
+        reset=_reset_pulse_channel_orm(qubit_pulse_channels.reset, "qubit"),
     )
 
     cr_orms: list[CrossResonanceChannelORM] = []
@@ -258,6 +302,8 @@ def _qubit_orm(qubit_key: str, qubit: Qubit) -> QubitORM:
         qubit.pulse_channels.cross_resonance_cancellation_channels,
     )
 
+    zx_pi_4_comp_orms = [_zx_pi4_comp_orm(aux_idx, comp) for aux_idx, comp in qubit.zx_pi_4_comp.items()]
+
     return QubitORM(
         uuid=qubit.uuid,
         qubit_key=qubit_key,
@@ -270,6 +316,8 @@ def _qubit_orm(qubit_key: str, qubit: Qubit) -> QubitORM:
         resonator=_resonator_orm(qubit.resonator),
         cross_resonance_channels=cr_orms,
         cross_resonance_cancellation_channels=crc_orms,
+        x_pi_2_comp=XPi2CompORM(phase_comp_x_pi_2=qubit.x_pi_2_comp.phase_comp_x_pi_2),
+        zx_pi_4_comps=zx_pi_4_comp_orms,
     )
 
 
@@ -340,6 +388,18 @@ def _none_to_nan(value: float | None) -> float:
     return math.nan if value is None else value
 
 
+def _reset_pulse_channel_from_orm(orm: ResetPulseChannelORM) -> ResetPulseChannel:
+    return ResetPulseChannel(
+        uuid=orm.uuid,
+        frequency=_none_to_nan(orm.frequency),
+        imbalance=orm.imbalance,
+        phase_iq_offset=orm.phase_iq_offset,
+        scale=complex(orm.scale_real, orm.scale_imag),
+        delay=orm.delay,
+        pulse=_pulse_from_orm(orm.pulse),
+    )
+
+
 def _resonator_from_orm(orm) -> Resonator:
     mpc = orm.pulse_channels.measure
     apc = orm.pulse_channels.acquire
@@ -363,6 +423,7 @@ def _resonator_from_orm(orm) -> Resonator:
                 scale=complex(apc.scale_real, apc.scale_imag),
                 acquire=_acquire_from_orm(apc.acquire),
             ),
+            reset=_reset_pulse_channel_from_orm(orm.pulse_channels.reset),
         ),
     )
 
@@ -404,6 +465,10 @@ def _qubit_pulse_channels_from_orm(
     return QubitPulseChannels(
         drive=DrivePulseChannel(
             uuid=drive_orm.uuid,
+            frequency=_none_to_nan(drive_orm.frequency),
+            imbalance=drive_orm.imbalance,
+            phase_iq_offset=drive_orm.phase_iq_offset,
+            scale=complex(drive_orm.scale_real, drive_orm.scale_imag),
             pulse=_pulse_from_orm(drive_orm.pulse),
             pulse_x_pi=_pulse_from_orm(drive_orm.pulse_x_pi) if drive_orm.pulse_x_pi else None,
         ),
@@ -415,6 +480,7 @@ def _qubit_pulse_channels_from_orm(
             scale=complex(ss_orm.scale_real, ss_orm.scale_imag),
             active=ss_orm.ss_active,
             delay=ss_orm.ss_delay,
+            pulse=_pulse_from_orm(ss_orm.pulse) if ss_orm.pulse else None,
         ),
         freq_shift=FreqShiftPulseChannel(
             uuid=fs_orm.uuid,
@@ -426,6 +492,7 @@ def _qubit_pulse_channels_from_orm(
             amp=fs_orm.fs_amp,
             phase=fs_orm.fs_phase,
         ),
+        reset=_reset_pulse_channel_from_orm(container.reset),
         cross_resonance_channels=cross_resonance,
         cross_resonance_cancellation_channels=cross_resonance_cancellation,
     )
@@ -439,6 +506,23 @@ def _qubit_from_orm(orm) -> tuple[str, Qubit]:
         orm.cross_resonance_channels,
         orm.cross_resonance_cancellation_channels,
     )
+
+    zx_pi_4_comp = {
+        comp.auxiliary_qubit: ZxPi4Comp(
+            pulse_precomp_target_zx_pi_4=_pulse_from_orm(comp.pulse_precomp) if comp.pulse_precomp else None,
+            pulse_postcomp_target_zx_pi_4=_pulse_from_orm(comp.pulse_postcomp) if comp.pulse_postcomp else None,
+            phase_comp_target_zx_pi_4=comp.phase_comp_target_zx_pi_4,
+            pulse_zx_pi_4_target_rotary_amp=comp.pulse_zx_pi_4_target_rotary_amp,
+            precomp_active=comp.precomp_active,
+            postcomp_active=comp.postcomp_active,
+            use_second_state=comp.use_second_state,
+            use_rotary=comp.use_rotary,
+        )
+        for comp in orm.zx_pi_4_comps
+    }
+
+    x_pi_2_comp = XPi2Comp(phase_comp_x_pi_2=orm.x_pi_2_comp.phase_comp_x_pi_2) if orm.x_pi_2_comp else XPi2Comp()
+
     return orm.qubit_key, Qubit(
         uuid=orm.uuid,
         physical_channel=_physical_channel_from_orm(orm.physical_channel),
@@ -447,6 +531,8 @@ def _qubit_from_orm(orm) -> tuple[str, Qubit]:
         mean_z_map_args=mean_z,
         discriminator=discriminator,
         direct_x_pi=orm.direct_x_pi,
+        x_pi_2_comp=x_pi_2_comp,
+        zx_pi_4_comp=zx_pi_4_comp,
     )
 
 
