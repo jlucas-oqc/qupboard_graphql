@@ -178,6 +178,7 @@ class PulseChannelORM(Base):
         foreign_keys="CalibratablePulseORM.owner_uuid",
         cascade="all, delete-orphan",
         uselist=False,
+        lazy="joined",
         overlaps=_PULSE_OVERLAPS,
     )
     pulse_x_pi: Mapped["CalibratablePulseORM | None"] = relationship(
@@ -186,6 +187,7 @@ class PulseChannelORM(Base):
         foreign_keys="CalibratablePulseORM.owner_uuid",
         cascade="all, delete-orphan",
         uselist=False,
+        lazy="joined",
         overlaps=_PULSE_OVERLAPS,
     )
 
@@ -225,6 +227,7 @@ class CrossResonanceChannelORM(Base):
         foreign_keys="CalibratablePulseORM.owner_uuid",
         cascade="all, delete-orphan",
         uselist=False,
+        lazy="joined",
         overlaps=_PULSE_OVERLAPS,
     )
 
@@ -255,6 +258,7 @@ class ZxPi4CompORM(Base):
         foreign_keys="CalibratablePulseORM.owner_uuid",
         cascade="all, delete-orphan",
         uselist=False,
+        lazy="joined",
         overlaps=_PULSE_OVERLAPS,
     )
     pulse_postcomp: Mapped["CalibratablePulseORM | None"] = relationship(
@@ -263,6 +267,7 @@ class ZxPi4CompORM(Base):
         foreign_keys="CalibratablePulseORM.owner_uuid",
         cascade="all, delete-orphan",
         uselist=False,
+        lazy="joined",
         overlaps=_PULSE_OVERLAPS,
     )
 
@@ -334,7 +339,7 @@ class QubitORM(Base):
         cascade="all, delete-orphan",
         primaryjoin="and_(CrossResonanceChannelORM.qubit_uuid == QubitORM.uuid, CrossResonanceChannelORM.role == 'cr')",
         foreign_keys="CrossResonanceChannelORM.qubit_uuid",
-        viewonly=False,
+        lazy="subquery",
         overlaps="cross_resonance_cancellation_channels,qubit",
     )
     cross_resonance_cancellation_channels: Mapped[list["CrossResonanceChannelORM"]] = relationship(
@@ -342,7 +347,7 @@ class QubitORM(Base):
         primaryjoin="and_(CrossResonanceChannelORM.qubit_uuid == QubitORM.uuid,"
         " CrossResonanceChannelORM.role == 'crc')",
         foreign_keys="CrossResonanceChannelORM.qubit_uuid",
-        viewonly=False,
+        lazy="subquery",
         overlaps="cross_resonance_channels,qubit",
     )
     zx_pi_4_comps: Mapped[list["ZxPi4CompORM"]] = relationship(back_populates="qubit", cascade="all, delete-orphan")
