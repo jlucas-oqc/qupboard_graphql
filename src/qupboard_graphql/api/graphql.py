@@ -1,73 +1,20 @@
-import json
+"""
+GraphQL query resolvers, schema, and FastAPI router.
+
+Strawberry type declarations live in graphql_types.py.
+"""
+
 from uuid import UUID
 
 import strawberry
 from fastapi import Depends
-from sqlalchemy import Uuid as SaUuid
 from sqlalchemy.orm import Session
 from strawberry.fastapi import GraphQLRouter
-from strawberry_sqlalchemy_mapper import (
-    StrawberrySQLAlchemyLoader,
-    StrawberrySQLAlchemyMapper,
-)
+from strawberry_sqlalchemy_mapper import StrawberrySQLAlchemyLoader
 
-from qupboard_graphql.db.models import (
-    CalibratablePulseORM,
-    CrossResonanceChannelORM,
-    HardwareModelORM,
-    PhysicalChannelORM,
-    PulseChannelORM,
-    QubitORM,
-    ZxPi4CompORM,
-)
+from qupboard_graphql.api.graphql_types import HardwareModel, mapper  # noqa: F401 – mapper.finalize() called there
+from qupboard_graphql.db.models import HardwareModelORM
 from qupboard_graphql.db.session import get_db
-
-
-mapper = StrawberrySQLAlchemyMapper(
-    extra_sqlalchemy_type_to_strawberry_type_map={SaUuid: UUID},
-)
-
-
-@mapper.type(PhysicalChannelORM)
-class PhysicalChannel:
-    __exclude__ = ["qubit"]
-
-
-@mapper.type(CalibratablePulseORM)
-class CalibratablePulse:
-    __exclude__ = []
-
-
-@mapper.type(PulseChannelORM)
-class PulseChannel:
-    __exclude__ = []
-
-
-@mapper.type(CrossResonanceChannelORM)
-class CrossResonanceChannel:
-    __exclude__ = ["qubit"]
-
-
-@mapper.type(ZxPi4CompORM)
-class ZxPi4Comp:
-    __exclude__ = ["qubit"]
-
-
-@mapper.type(QubitORM)
-class Qubit:
-    __exclude__ = ["hardware_model"]
-
-    @strawberry.field
-    def mean_z_map_args(self) -> list[float]:
-        return json.loads(self.mean_z_map_args)  # type: ignore[attr-defined]
-
-
-@mapper.type(HardwareModelORM)
-class HardwareModel:
-    pass
-
-
-mapper.finalize()
 
 
 async def get_db_context(db: Session = Depends(get_db)):

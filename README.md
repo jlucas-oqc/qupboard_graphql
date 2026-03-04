@@ -119,15 +119,17 @@ qupboard_graphql/
 │   └── qupboard_graphql/
 │       ├── main.py                 # Entrypoint – starts uvicorn on 0.0.0.0:8000
 │       ├── config.py               # Pydantic settings (DATABASE_URL, API paths)
-│       ├── api/
-│       │   ├── app.py              # FastAPI application factory
-│       │   ├── graphql.py          # Strawberry schema, types, and GraphQL router
-│       │   └── rest.py             # REST router (CRUD for hardware models)
-│       ├── db/
-│       │   ├── database.py         # SQLAlchemy DeclarativeBase
-│       │   ├── models.py           # ORM models mirroring the hardware model schema
-│       │   ├── mapper.py           # ORM ↔ Pydantic conversion helpers
-│       │   └── session.py          # Engine, SessionLocal, and get_db dependency
+        ├── api/
+        │   ├── app.py              # FastAPI application factory
+        │   ├── graphql_types.py    # Strawberry type declarations (mapper + @mapper.type classes)
+        │   ├── graphql.py          # Query resolvers, schema, and GraphQL router
+        │   └── rest.py             # REST router (CRUD for hardware models)
+        ├── db/
+        │   ├── database.py         # SQLAlchemy DeclarativeBase
+        │   ├── repository.py       # RepositoryMixin (get_by_uuid, get_all_pks)
+        │   ├── models.py           # ORM models mirroring the hardware model schema
+        │   ├── mapper.py           # ORM ↔ Pydantic conversion helpers
+        │   └── session.py          # Engine, SessionLocal, and get_db dependency
 │       └── schemas/
 │           └── hardware_model.py   # Pydantic schema for HardwareModel
 └── tests/

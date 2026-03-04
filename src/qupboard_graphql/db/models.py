@@ -39,6 +39,7 @@ from sqlalchemy import (
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from qupboard_graphql.db.database import Base
+from qupboard_graphql.db.repository import RepositoryMixin
 
 
 # ---------------------------------------------------------------------------
@@ -46,7 +47,7 @@ from qupboard_graphql.db.database import Base
 # ---------------------------------------------------------------------------
 
 
-class HardwareModelORM(Base):
+class HardwareModelORM(RepositoryMixin, Base):
     __tablename__ = "hardware_models"
 
     id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
