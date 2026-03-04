@@ -1,8 +1,5 @@
-import os
 from pathlib import Path
 
-# Set before any app modules are imported so session.py never creates a file-based DB
-os.environ.setdefault("DATABASE_URL", "sqlite:///:memory:")
 
 import pytest
 from fastapi.testclient import TestClient

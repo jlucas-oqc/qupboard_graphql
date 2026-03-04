@@ -8,12 +8,12 @@ from qupboard_graphql.api.rest import rest_router
 from qupboard_graphql.api.root import root_router
 from qupboard_graphql.config import settings
 from qupboard_graphql.db.database import Base
-from qupboard_graphql.db.session import engine
+from qupboard_graphql.db.session import get_engine
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    Base.metadata.create_all(bind=engine)
+    Base.metadata.create_all(bind=get_engine())
     yield
 
 
