@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import uvicorn
 
 from qupboard_graphql.api.app import get_app

@@ -66,6 +66,13 @@ Start the server using the installed `qupboard` script:
 poetry run qupboard
 ```
 
+or alternatively, run the FastAPI app directly (assuming you are in the project root and have installed dependencies
+into a virtual environment):
+
+```bash
+./src/qupboard_graphql/main.py
+````
+
 The server starts on `http://0.0.0.0:8000`. The following endpoints are then available:
 
 | URL                             | Description                            |
