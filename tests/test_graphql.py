@@ -242,10 +242,7 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                     }
                                 }
                             }
-                            xPi2Comp {
-                                uuid
-                                phaseCompXPi2
-                            }
+                            phaseCompXPi2
                             zxPi4Comps {
                                 edges {
                                     node {
@@ -322,7 +319,7 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
     assert resonator_reset["resetKind"] == "resonator"
     assert resonator_reset["pulse"] is not None
 
-    assert first_qubit["xPi2Comp"] is not None
+    assert first_qubit["phaseCompXPi2"] is not None
     assert len(first_qubit["zxPi4Comps"]["edges"]) > 0
 
 

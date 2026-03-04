@@ -23,7 +23,6 @@ from qupboard_graphql.db.models import (
     ResonatorORM,
     ResonatorPulseChannelORM,
     ResetPulseChannelORM,
-    XPi2CompORM,
     ZxPi4CompORM,
 )
 from qupboard_graphql.db.session import get_db
@@ -81,11 +80,6 @@ class ResonatorPulseChannel:
 @mapper.type(ResetPulseChannelORM)
 class ResetPulseChannel:
     __exclude__ = ["qubit", "resonator"]
-
-
-@mapper.type(XPi2CompORM)
-class XPi2Comp:
-    __exclude__ = ["qubit"]
 
 
 @mapper.type(ZxPi4CompORM)

@@ -1,8 +1,8 @@
 """Initial schema
 
-Revision ID: e42df75d18ba
+Revision ID: b3ff180e8bc5
 Revises:
-Create Date: 2026-03-04 15:08:41.491840
+Create Date: 2026-03-04 15:14:42.228913
 
 """
 
@@ -13,7 +13,7 @@ import sqlalchemy as sa
 
 
 # revision identifiers, used by Alembic.
-revision: str = "e42df75d18ba"
+revision: str = "b3ff180e8bc5"
 down_revision: Union[str, Sequence[str], None] = None
 branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
@@ -38,6 +38,7 @@ def upgrade() -> None:
         sa.Column("discriminator_real", sa.Float(), nullable=False),
         sa.Column("discriminator_imag", sa.Float(), nullable=False),
         sa.Column("direct_x_pi", sa.Boolean(), nullable=False),
+        sa.Column("phase_comp_x_pi_2", sa.Float(), nullable=False),
         sa.Column("hardware_model_id", sa.Uuid(), nullable=True),
         sa.ForeignKeyConstraint(
             ["hardware_model_id"],
@@ -101,17 +102,6 @@ def upgrade() -> None:
     op.create_table(
         "resonators",
         sa.Column("uuid", sa.Uuid(), nullable=False),
-        sa.Column("qubit_uuid", sa.Uuid(), nullable=True),
-        sa.ForeignKeyConstraint(
-            ["qubit_uuid"],
-            ["qubits.uuid"],
-        ),
-        sa.PrimaryKeyConstraint("uuid"),
-    )
-    op.create_table(
-        "x_pi_2_comps",
-        sa.Column("uuid", sa.Uuid(), nullable=False),
-        sa.Column("phase_comp_x_pi_2", sa.Float(), nullable=False),
         sa.Column("qubit_uuid", sa.Uuid(), nullable=True),
         sa.ForeignKeyConstraint(
             ["qubit_uuid"],
@@ -278,7 +268,6 @@ def downgrade() -> None:
     op.drop_table("reset_pulse_channels")
     op.drop_table("physical_channels")
     op.drop_table("zx_pi_4_comps")
-    op.drop_table("x_pi_2_comps")
     op.drop_table("resonators")
     op.drop_table("qubit_pulse_channels_base")
     op.drop_table("drive_pulse_channels")

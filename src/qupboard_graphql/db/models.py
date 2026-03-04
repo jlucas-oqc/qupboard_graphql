@@ -15,9 +15,9 @@ hardware_models
        │    └─ calibratable_pulses
        ├─ cross_resonance_channels   (FK → qubits, role = 'cr' | 'crc')
        │    └─ calibratable_pulses   (role='cr' rows only)
-       ├─ x_pi_2_comps               (FK → qubits, one per qubit)
        ├─ zx_pi_4_comps              (FK → qubits, one per CR pair)
        │    └─ calibratable_pulses   (precomp / postcomp, nullable)
+       │    phase_comp_x_pi_2 inlined on qubits
        └─ resonators                (FK → qubits)
             ├─ physical_channels    (channel_kind='resonator', FK → resonators)
             └─ resonator_pulse_channels_base  (FK → resonators, role = 'measure' | 'acquire')
@@ -389,21 +389,6 @@ class ResetPulseChannelORM(Base):
 
 
 # ---------------------------------------------------------------------------
-# XPi2Comp
-# ---------------------------------------------------------------------------
-
-
-class XPi2CompORM(Base):
-    __tablename__ = "x_pi_2_comps"
-
-    uuid: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
-    phase_comp_x_pi_2: Mapped[float] = mapped_column(Float, default=0.0)
-
-    qubit_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("qubits.uuid"), nullable=True)
-    qubit: Mapped["QubitORM | None"] = relationship(back_populates="x_pi_2_comp")
-
-
-# ---------------------------------------------------------------------------
 # ZxPi4Comp  (one per CR pair, keyed by auxiliary_qubit)
 # ---------------------------------------------------------------------------
 
@@ -499,6 +484,8 @@ class QubitORM(Base):
     discriminator_real: Mapped[float] = mapped_column(Float, default=0.0)
     discriminator_imag: Mapped[float] = mapped_column(Float, default=0.0)
     direct_x_pi: Mapped[bool] = mapped_column(Boolean, default=False)
+    # Inlined XPi2Comp (always 1-to-1, single data column)
+    phase_comp_x_pi_2: Mapped[float] = mapped_column(Float, default=0.0)
 
     hardware_model_id: Mapped[UUID | None] = mapped_column(ForeignKey("hardware_models.id"), nullable=True)
     hardware_model: Mapped["HardwareModelORM | None"] = relationship(back_populates="qubits")
@@ -554,8 +541,5 @@ class QubitORM(Base):
         foreign_keys="CrossResonanceChannelORM.qubit_uuid",
         viewonly=False,
         overlaps="cross_resonance_channels,qubit",
-    )
-    x_pi_2_comp: Mapped["XPi2CompORM | None"] = relationship(
-        back_populates="qubit", cascade="all, delete-orphan", uselist=False
     )
     zx_pi_4_comps: Mapped[list["ZxPi4CompORM"]] = relationship(back_populates="qubit", cascade="all, delete-orphan")

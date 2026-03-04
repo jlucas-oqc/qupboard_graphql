@@ -37,7 +37,6 @@ from qupboard_graphql.db.models import (
     ResonatorORM,
     ResonatorPulseChannelORM,
     ResetPulseChannelORM,
-    XPi2CompORM,
     ZxPi4CompORM,
 )
 
@@ -290,6 +289,7 @@ def _qubit_orm(qubit_key: str, qubit: Qubit) -> QubitORM:
         discriminator_real=discriminator_real,
         discriminator_imag=discriminator_imag,
         direct_x_pi=qubit.direct_x_pi,
+        phase_comp_x_pi_2=qubit.x_pi_2_comp.phase_comp_x_pi_2,
         physical_channel=_physical_channel_orm(qubit.physical_channel),
         drive_pulse_channel=drive_orm,
         second_state_pulse_channel=ss_orm,
@@ -298,7 +298,6 @@ def _qubit_orm(qubit_key: str, qubit: Qubit) -> QubitORM:
         resonator=_resonator_orm(qubit.resonator),
         cross_resonance_channels=cr_orms,
         cross_resonance_cancellation_channels=crc_orms,
-        x_pi_2_comp=XPi2CompORM(phase_comp_x_pi_2=qubit.x_pi_2_comp.phase_comp_x_pi_2),
         zx_pi_4_comps=zx_pi_4_comp_orms,
     )
 
@@ -497,7 +496,7 @@ def _qubit_from_orm(orm: QubitORM) -> tuple[str, Qubit]:
         for comp in orm.zx_pi_4_comps
     }
 
-    x_pi_2_comp = XPi2Comp(phase_comp_x_pi_2=orm.x_pi_2_comp.phase_comp_x_pi_2) if orm.x_pi_2_comp else XPi2Comp()
+    x_pi_2_comp = XPi2Comp(phase_comp_x_pi_2=orm.phase_comp_x_pi_2)
 
     return orm.qubit_key, Qubit(
         uuid=orm.uuid,

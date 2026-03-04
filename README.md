@@ -378,10 +378,7 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
               }
             }
           }
-          xPi2Comp {
-            uuid
-            phaseCompXPi2
-          }
+          phaseCompXPi2
           zxPi4Comps {
             edges {
               node {
@@ -493,7 +490,7 @@ hardware_models
     ├── reset_pulse_channels            (reset_kind = 'qubit') + calibratable_pulses
     ├── cross_resonance_channels        (role = 'cr' | 'crc')
     │   └── calibratable_pulses         (role='cr' rows only)
-    ├── x_pi_2_comps
+    ├── phase_comp_x_pi_2               (inlined column on qubits)
     ├── zx_pi_4_comps                   (one per CR pair)
     │   └── calibratable_pulses         (pulse_precomp / pulse_postcomp, nullable)
     └── resonators
