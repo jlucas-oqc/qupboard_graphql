@@ -7,7 +7,6 @@ import math
 
 from qupboard_graphql.schemas.hardware_model import (
     AcquirePulseChannel,
-    BaseBand,
     CalibratableAcquire,
     CalibratablePulse,
     CrossResonanceCancellationPulseChannel,
@@ -15,7 +14,6 @@ from qupboard_graphql.schemas.hardware_model import (
     DrivePulseChannel,
     FreqShiftPulseChannel,
     HardwareModel,
-    IQVoltageBias,
     MeasurePulseChannel,
     PhysicalChannel,
     Qubit,
@@ -28,13 +26,11 @@ from qupboard_graphql.schemas.hardware_model import (
     ZxPi4Comp,
 )
 from qupboard_graphql.db.models import (
-    BaseBandORM,
     CalibratableAcquireORM,
     CalibratablePulseORM,
     CrossResonanceChannelORM,
     DrivePulseChannelORM,
     HardwareModelORM,
-    IQVoltageBiasORM,
     PhysicalChannelORM,
     QubitORM,
     QubitPulseChannelORM,
@@ -59,10 +55,6 @@ def _pulse_orm(pulse: CalibratablePulse) -> CalibratablePulseORM:
     )
 
 
-def _iq_bias_orm(bias: IQVoltageBias) -> IQVoltageBiasORM:
-    return IQVoltageBiasORM(bias=bias.bias)
-
-
 def _physical_channel_orm(pc: PhysicalChannel) -> PhysicalChannelORM:
     return PhysicalChannelORM(
         uuid=pc.uuid,
@@ -71,18 +63,14 @@ def _physical_channel_orm(pc: PhysicalChannel) -> PhysicalChannelORM:
         block_size=pc.block_size,
         default_amplitude=pc.default_amplitude,
         switch_box=pc.switch_box,
-        baseband=BaseBandORM(
-            uuid=pc.baseband.uuid,
-            frequency=pc.baseband.frequency,
-            if_frequency=pc.baseband.if_frequency,
-        ),
-        iq_voltage_bias=_iq_bias_orm(pc.iq_voltage_bias),
+        baseband_uuid=pc.baseband.uuid,
+        baseband_frequency=pc.baseband.frequency,
+        baseband_if_frequency=pc.baseband.if_frequency,
+        iq_bias=pc.iq_voltage_bias.bias,
     )
 
 
-def _resonator_physical_channel_orm(
-    rpc: PhysicalChannel,
-) -> PhysicalChannelORM:
+def _resonator_physical_channel_orm(rpc: PhysicalChannel) -> PhysicalChannelORM:
     return PhysicalChannelORM(
         uuid=rpc.uuid,
         channel_kind="resonator",
@@ -91,12 +79,10 @@ def _resonator_physical_channel_orm(
         default_amplitude=rpc.default_amplitude,
         switch_box=rpc.switch_box,
         swap_readout_iq=rpc.swap_readout_iq,
-        baseband=BaseBandORM(
-            uuid=rpc.baseband.uuid,
-            frequency=rpc.baseband.frequency,
-            if_frequency=rpc.baseband.if_frequency,
-        ),
-        iq_voltage_bias=_iq_bias_orm(rpc.iq_voltage_bias),
+        baseband_uuid=rpc.baseband.uuid,
+        baseband_frequency=rpc.baseband.frequency,
+        baseband_if_frequency=rpc.baseband.if_frequency,
+        iq_bias=rpc.iq_voltage_bias.bias,
     )
 
 
@@ -346,19 +332,9 @@ def _pulse_from_orm(orm) -> CalibratablePulse:
     )
 
 
-def _baseband_from_orm(orm) -> BaseBand:
-    return BaseBand(
-        uuid=orm.uuid,
-        frequency=orm.frequency,
-        if_frequency=orm.if_frequency,
-    )
-
-
-def _iq_bias_from_orm(orm) -> IQVoltageBias:
-    return IQVoltageBias(bias=orm.bias)
-
-
 def _physical_channel_from_orm(orm: PhysicalChannelORM) -> PhysicalChannel:
+    from qupboard_graphql.schemas.hardware_model import BaseBand, IQVoltageBias
+
     return PhysicalChannel(
         uuid=orm.uuid,
         name_index=orm.name_index,
@@ -366,8 +342,12 @@ def _physical_channel_from_orm(orm: PhysicalChannelORM) -> PhysicalChannel:
         default_amplitude=orm.default_amplitude,
         switch_box=orm.switch_box,
         swap_readout_iq=orm.swap_readout_iq,
-        baseband=_baseband_from_orm(orm.baseband),
-        iq_voltage_bias=_iq_bias_from_orm(orm.iq_voltage_bias),
+        baseband=BaseBand(
+            uuid=orm.baseband_uuid,
+            frequency=orm.baseband_frequency,
+            if_frequency=orm.baseband_if_frequency,
+        ),
+        iq_voltage_bias=IQVoltageBias(bias=orm.iq_bias),
     )
 
 

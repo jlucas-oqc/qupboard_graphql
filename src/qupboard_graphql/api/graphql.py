@@ -12,13 +12,11 @@ from strawberry_sqlalchemy_mapper import (
 )
 
 from qupboard_graphql.db.models import (
-    BaseBandORM,
     CalibratableAcquireORM,
     CalibratablePulseORM,
     CrossResonanceChannelORM,
     DrivePulseChannelORM,
     HardwareModelORM,
-    IQVoltageBiasORM,
     PhysicalChannelORM,
     QubitORM,
     QubitPulseChannelORM,
@@ -34,16 +32,6 @@ from qupboard_graphql.db.session import get_db
 mapper = StrawberrySQLAlchemyMapper(
     extra_sqlalchemy_type_to_strawberry_type_map={SaUuid: UUID},
 )
-
-
-@mapper.type(BaseBandORM)
-class BaseBand:
-    __exclude__ = ["physical_channel"]
-
-
-@mapper.type(IQVoltageBiasORM)
-class IQVoltageBias:
-    __exclude__ = ["physical_channel"]
 
 
 @mapper.type(PhysicalChannelORM)

@@ -35,15 +35,10 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                 defaultAmplitude
                                 switchBox
                                 swapReadoutIq
-                                baseband {
-                                    uuid
-                                    frequency
-                                    ifFrequency
-                                }
-                                iqVoltageBias {
-                                    id
-                                    bias
-                                }
+                                basebandUuid
+                                basebandFrequency
+                                basebandIfFrequency
+                                iqBias
                             }
                             drivePulseChannel {
                                 uuid
@@ -184,15 +179,10 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                     defaultAmplitude
                                     switchBox
                                     swapReadoutIq
-                                    baseband {
-                                        uuid
-                                        frequency
-                                        ifFrequency
-                                    }
-                                    iqVoltageBias {
-                                        id
-                                        bias
-                                    }
+                                    basebandUuid
+                                    basebandFrequency
+                                    basebandIfFrequency
+                                    iqBias
                                 }
                                 measurePulseChannel {
                                     uuid

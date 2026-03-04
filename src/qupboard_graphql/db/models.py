@@ -6,8 +6,7 @@ Table hierarchy
 hardware_models
   └─ qubits  (FK → hardware_models)
        ├─ physical_channels          (FK → qubits OR resonators, discriminated by channel_kind)
-       │    └─ basebands             (FK → physical_channels)
-       │    └─ iq_voltage_biases     (FK → physical_channels)
+       │    baseband and IQ-bias columns are inlined here
        ├─ drive_pulse_channels       (FK → qubits)
        │    └─ calibratable_pulses   (pulse / pulse_x_pi)
        ├─ qubit_pulse_channels_base  (FK → qubits, role = 'second_state' | 'freq_shift')
@@ -60,40 +59,8 @@ class HardwareModelORM(Base):
 
 
 # ---------------------------------------------------------------------------
-# BaseBand
-# ---------------------------------------------------------------------------
-
-
-class BaseBandORM(Base):
-    __tablename__ = "basebands"
-
-    uuid: Mapped[UUID] = mapped_column(primary_key=True)
-    frequency: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
-    if_frequency: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
-
-    physical_channel_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("physical_channels.uuid"), nullable=True)
-
-    physical_channel: Mapped["PhysicalChannelORM | None"] = relationship(back_populates="baseband")
-
-
-# ---------------------------------------------------------------------------
-# IQVoltageBias
-# ---------------------------------------------------------------------------
-
-
-class IQVoltageBiasORM(Base):
-    __tablename__ = "iq_voltage_biases"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    bias: Mapped[str] = mapped_column(String, nullable=False)
-
-    physical_channel_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("physical_channels.uuid"), nullable=True)
-
-    physical_channel: Mapped["PhysicalChannelORM | None"] = relationship(back_populates="iq_voltage_bias")
-
-
-# ---------------------------------------------------------------------------
 # PhysicalChannel  (unified – qubit and resonator, discriminated by channel_kind)
+# Baseband and IQVoltageBias fields are inlined here (both are always 1-to-1).
 # ---------------------------------------------------------------------------
 
 
@@ -103,6 +70,10 @@ class PhysicalChannelORM(Base):
     channel_kind: 'qubit' | 'resonator'
     swap_readout_iq is only meaningful when channel_kind == 'resonator'.
     Exactly one of qubit_uuid / resonator_uuid will be non-NULL per row.
+
+    BaseBand fields (baseband_uuid, baseband_frequency, baseband_if_frequency) and
+    IQVoltageBias field (iq_bias) are stored as inline columns rather than
+    separate tables, since both are always present and always 1-to-1.
     """
 
     __tablename__ = "physical_channels"
@@ -115,22 +86,19 @@ class PhysicalChannelORM(Base):
     switch_box: Mapped[str] = mapped_column(String, nullable=False)
     swap_readout_iq: Mapped[bool] = mapped_column(Boolean, default=False)
 
+    # Inlined BaseBand
+    baseband_uuid: Mapped[UUID] = mapped_column(nullable=False)
+    baseband_frequency: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    baseband_if_frequency: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+
+    # Inlined IQVoltageBias
+    iq_bias: Mapped[str] = mapped_column(String, nullable=False)
+
     qubit_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("qubits.uuid"), nullable=True)
     qubit: Mapped["QubitORM | None"] = relationship(back_populates="physical_channel")
 
     resonator_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("resonators.uuid"), nullable=True)
     resonator: Mapped["ResonatorORM | None"] = relationship(back_populates="physical_channel")
-
-    baseband: Mapped["BaseBandORM | None"] = relationship(
-        back_populates="physical_channel",
-        cascade="all, delete-orphan",
-        uselist=False,
-    )
-    iq_voltage_bias: Mapped["IQVoltageBiasORM | None"] = relationship(
-        back_populates="physical_channel",
-        cascade="all, delete-orphan",
-        uselist=False,
-    )
 
 
 # ---------------------------------------------------------------------------

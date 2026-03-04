@@ -171,15 +171,10 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
             defaultAmplitude
             switchBox
             swapReadoutIq
-            baseband {
-              uuid
-              frequency
-              ifFrequency
-            }
-            iqVoltageBias {
-              id
-              bias
-            }
+            basebandUuid
+            basebandFrequency
+            basebandIfFrequency
+            iqBias
           }
           drivePulseChannel {
             uuid
@@ -320,15 +315,10 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
               defaultAmplitude
               switchBox
               swapReadoutIq
-              baseband {
-                uuid
-                frequency
-                ifFrequency
-              }
-              iqVoltageBias {
-                id
-                bias
-              }
+              basebandUuid
+              basebandFrequency
+              basebandIfFrequency
+              iqBias
             }
             measurePulseChannel {
               uuid
@@ -496,8 +486,7 @@ The database schema mirrors the `HardwareModel` Pydantic schema and is defined a
 hardware_models
 └── qubits
     ├── physical_channels               (channel_kind = 'qubit' | 'resonator')
-    │   ├── basebands
-    │   └── iq_voltage_biases
+    │   baseband and IQ-bias columns inlined here
     ├── drive_pulse_channels            + calibratable_pulses (pulse / pulse_x_pi)
     ├── qubit_pulse_channels_base       (role = 'second_state' | 'freq_shift')
     │   └── calibratable_pulses         (second_state only)
