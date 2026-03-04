@@ -348,13 +348,10 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
               phaseIqOffset
               scaleReal
               scaleImag
-              acquire {
-                id
-                delay
-                width
-                sync
-                useWeights
-              }
+              acqDelay
+              acqWidth
+              acqSync
+              acqUseWeights
             }
             resetPulseChannel {
               uuid
@@ -497,7 +494,7 @@ hardware_models
         ├── physical_channels           (channel_kind = 'resonator')
         ├── resonator_pulse_channels_base  (role = 'measure' | 'acquire')
         │   ├── calibratable_pulses     (pulse_role = 'measure')
-        │   └── calibratable_acquires   (role='acquire' rows only)
+        │   └── acq_* columns inlined   (delay, width, sync, use_weights on role='acquire' rows)
         └── reset_pulse_channels        (reset_kind = 'resonator') + calibratable_pulses (pulse_role = 'reset_resonator')
 ```
 

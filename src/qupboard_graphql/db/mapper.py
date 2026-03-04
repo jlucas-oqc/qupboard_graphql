@@ -26,7 +26,6 @@ from qupboard_graphql.schemas.hardware_model import (
     ZxPi4Comp,
 )
 from qupboard_graphql.db.models import (
-    CalibratableAcquireORM,
     CalibratablePulseORM,
     CrossResonanceChannelORM,
     DrivePulseChannelORM,
@@ -84,15 +83,6 @@ def _resonator_physical_channel_orm(rpc: PhysicalChannel) -> PhysicalChannelORM:
         baseband_frequency=rpc.baseband.frequency,
         baseband_if_frequency=rpc.baseband.if_frequency,
         iq_bias=rpc.iq_voltage_bias.bias,
-    )
-
-
-def _acquire_orm(acq: CalibratableAcquire) -> CalibratableAcquireORM:
-    return CalibratableAcquireORM(
-        delay=acq.delay,
-        width=acq.width,
-        sync=acq.sync,
-        use_weights=acq.use_weights,
     )
 
 
@@ -155,7 +145,10 @@ def _acquire_pulse_channel_orm(apc: AcquirePulseChannel) -> ResonatorPulseChanne
         phase_iq_offset=apc.phase_iq_offset,
         scale_real=real,
         scale_imag=imag,
-        acquire=_acquire_orm(apc.acquire),
+        acq_delay=apc.acquire.delay,
+        acq_width=apc.acquire.width,
+        acq_sync=apc.acquire.sync,
+        acq_use_weights=apc.acquire.use_weights,
     )
 
 
@@ -365,15 +358,6 @@ def _physical_channel_from_orm(orm: PhysicalChannelORM) -> PhysicalChannel:
     )
 
 
-def _acquire_from_orm(orm) -> CalibratableAcquire:
-    return CalibratableAcquire(
-        delay=orm.delay,
-        width=orm.width,
-        sync=orm.sync,
-        use_weights=orm.use_weights,
-    )
-
-
 def _none_to_nan(value: float | None) -> float:
     return math.nan if value is None else value
 
@@ -411,7 +395,12 @@ def _resonator_from_orm(orm: ResonatorORM) -> Resonator:
                 imbalance=apc.imbalance,
                 phase_iq_offset=apc.phase_iq_offset,
                 scale=complex(apc.scale_real, apc.scale_imag),
-                acquire=_acquire_from_orm(apc.acquire),
+                acquire=CalibratableAcquire(
+                    delay=apc.acq_delay,
+                    width=apc.acq_width,
+                    sync=apc.acq_sync,
+                    use_weights=apc.acq_use_weights,
+                ),
             ),
             reset=_reset_pulse_channel_from_orm(orm.reset_pulse_channel),
         ),

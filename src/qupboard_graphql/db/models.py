@@ -21,8 +21,8 @@ hardware_models
        └─ resonators                (FK → qubits)
             ├─ physical_channels    (channel_kind='resonator', FK → resonators)
             └─ resonator_pulse_channels_base  (FK → resonators, role = 'measure' | 'acquire')
-                 ├─ calibratable_pulses       (role='measure' rows only)
-                 └─ calibratable_acquires     (role='acquire' rows only)
+                 ├─ calibratable_pulses       (pulse_role = 'measure')
+                 └─ acquire columns inlined   (delay, width, sync, use_weights on role='acquire' rows)
 """
 
 import math
@@ -254,28 +254,9 @@ class CrossResonanceChannelORM(Base):
 
 
 # ---------------------------------------------------------------------------
-# CalibratableAcquire
-# ---------------------------------------------------------------------------
-
-
-class CalibratableAcquireORM(Base):
-    __tablename__ = "calibratable_acquires"
-
-    id: Mapped[int] = mapped_column(Integer, primary_key=True, autoincrement=True)
-    delay: Mapped[float] = mapped_column(Float, default=180e-8)
-    width: Mapped[float] = mapped_column(Float, default=1e-6)
-    sync: Mapped[bool] = mapped_column(Boolean, default=True)
-    use_weights: Mapped[bool] = mapped_column(Boolean, default=False)
-
-    acquire_pulse_channel_uuid: Mapped[UUID | None] = mapped_column(
-        ForeignKey("resonator_pulse_channels_base.uuid"),
-        nullable=True,
-    )
-    acquire_pulse_channel: Mapped["ResonatorPulseChannelORM | None"] = relationship(back_populates="acquire")
-
-
-# ---------------------------------------------------------------------------
 # ResonatorPulseChannel  (measure / acquire – FK directly to resonators)
+# Acquire fields (acq_delay, acq_width, acq_sync, acq_use_weights) are inlined
+# here rather than in a separate table, since they are always 1-to-1.
 # ---------------------------------------------------------------------------
 
 
@@ -284,7 +265,7 @@ class ResonatorPulseChannelORM(Base):
 
     role: 'measure' | 'acquire'
     pulse is only populated when role == 'measure'.
-    acquire is only populated when role == 'acquire'.
+    acq_* columns are only meaningful when role == 'acquire'.
     """
 
     __tablename__ = "resonator_pulse_channels_base"
@@ -297,6 +278,12 @@ class ResonatorPulseChannelORM(Base):
     scale_real: Mapped[float] = mapped_column(Float, default=1.0)
     scale_imag: Mapped[float] = mapped_column(Float, default=0.0)
 
+    # Inlined CalibratableAcquire (only meaningful when role == 'acquire')
+    acq_delay: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    acq_width: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
+    acq_sync: Mapped[bool | None] = mapped_column(Boolean, nullable=True, default=None)
+    acq_use_weights: Mapped[bool | None] = mapped_column(Boolean, nullable=True, default=None)
+
     resonator_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("resonators.uuid"), nullable=True)
 
     pulse: Mapped["CalibratablePulseORM | None"] = relationship(
@@ -306,11 +293,6 @@ class ResonatorPulseChannelORM(Base):
         cascade="all, delete-orphan",
         uselist=False,
         overlaps=_PULSE_OVERLAPS,
-    )
-    acquire: Mapped["CalibratableAcquireORM | None"] = relationship(
-        back_populates="acquire_pulse_channel",
-        cascade="all, delete-orphan",
-        uselist=False,
     )
 
 

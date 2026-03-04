@@ -212,13 +212,10 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                                     phaseIqOffset
                                     scaleReal
                                     scaleImag
-                                    acquire {
-                                        id
-                                        delay
-                                        width
-                                        sync
-                                        useWeights
-                                    }
+                                    acqDelay
+                                    acqWidth
+                                    acqSync
+                                    acqUseWeights
                                 }
                                 resetPulseChannel {
                                     uuid
