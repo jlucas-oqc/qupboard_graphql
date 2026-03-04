@@ -207,21 +207,61 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
           discriminatorImag
           directXPi
           phaseCompXPi2
-          resUuid
-          physicalChannels {
-            edges {
-              node {
-                uuid
-                channelKind
-                nameIndex
-                blockSize
-                defaultAmplitude
-                switchBox
-                swapReadoutIq
-                basebandUuid
-                basebandFrequency
-                basebandIfFrequency
-                iqBias
+          physicalChannel {
+            uuid
+            channelKind
+            nameIndex
+            blockSize
+            defaultAmplitude
+            switchBox
+            swapReadoutIq
+            basebandUuid
+            basebandFrequency
+            basebandIfFrequency
+            iqBias
+          }
+          resonator {
+            uuid
+            physicalChannel {
+              uuid
+              channelKind
+              nameIndex
+              blockSize
+              defaultAmplitude
+              switchBox
+              swapReadoutIq
+              basebandUuid
+              basebandFrequency
+              basebandIfFrequency
+              iqBias
+            }
+            pulseChannels {
+              edges {
+                node {
+                  uuid
+                  channelRole
+                  frequency
+                  imbalance
+                  phaseIqOffset
+                  scaleReal
+                  scaleImag
+                  acqDelay
+                  acqWidth
+                  acqSync
+                  acqUseWeights
+                  resetDelay
+                  pulse {
+                    id
+                    waveformType
+                    width
+                    amp
+                    phase
+                    drag
+                    rise
+                    ampSetup
+                    stdDev
+                  }
+                }
               }
             }
           }
@@ -240,10 +280,6 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
                 fsActive
                 fsAmp
                 fsPhase
-                acqDelay
-                acqWidth
-                acqSync
-                acqUseWeights
                 resetDelay
                 pulse {
                   id
@@ -260,6 +296,12 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
                   id
                   waveformType
                   width
+                  amp
+                  phase
+                  drag
+                  rise
+                  ampSetup
+                  stdDev
                 }
               }
             }
@@ -279,6 +321,12 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
                   id
                   waveformType
                   width
+                  amp
+                  phase
+                  drag
+                  rise
+                  ampSetup
+                  stdDev
                 }
               }
             }
@@ -312,11 +360,23 @@ The GraphQL API is available at `/graphql`. An interactive GraphiQL IDE is serve
                   id
                   waveformType
                   width
+                  amp
+                  phase
+                  drag
+                  rise
+                  ampSetup
+                  stdDev
                 }
                 pulsePostcomp {
                   id
                   waveformType
                   width
+                  amp
+                  phase
+                  drag
+                  rise
+                  ampSetup
+                  stdDev
                 }
               }
             }
@@ -389,23 +449,27 @@ The database schema mirrors the `HardwareModel` Pydantic schema and is defined a
 ```
 hardware_models
 └── qubits
-    ├── physical_channels      (channel_kind = 'qubit' | 'resonator'; baseband + IQ-bias inlined)
-    ├── pulse_channels         (channel_role discriminator; replaces 4 separate tables)
+    ├── physical_channels      (channel_kind = 'qubit'; baseband + IQ-bias inlined)
+    ├── pulse_channels         (channel_role discriminator; qubit-owned channels only)
     │   channel_role values:
     │     'drive'            – qubit drive channel
     │     'second_state'     – second-state channel (ss_active, ss_delay)
     │     'freq_shift'       – freq-shift channel   (fs_active, fs_amp, fs_phase)
-    │     'measure'          – resonator measure channel
-    │     'acquire'          – resonator acquire channel (acq_delay/width/sync/use_weights)
-    │     'reset_qubit'      – qubit reset channel   (reset_delay)
-    │     'reset_resonator'  – resonator reset channel (reset_delay)
+    │     'reset_qubit'      – qubit reset channel  (reset_delay)
     │   └── calibratable_pulses (owner_uuid + pulse_role discriminator)
     ├── cross_resonance_channels (role = 'cr' | 'crc')
     │   └── calibratable_pulses  (pulse_role = 'cr')
-    ├── phase_comp_x_pi_2        (inlined column on qubits)
-    ├── res_uuid                 (resonator UUID inlined on qubits)
-    └── zx_pi_4_comps            (one per CR pair)
-        └── calibratable_pulses  (pulse_role = 'zx_precomp' | 'zx_postcomp', nullable)
+    ├── phase_comp_x_pi_2      (inlined column on qubits)
+    ├── zx_pi_4_comps          (one per CR pair)
+    │   └── calibratable_pulses (pulse_role = 'zx_precomp' | 'zx_postcomp', nullable)
+    └── resonators             (one-to-one with qubit)
+        ├── physical_channels  (channel_kind = 'resonator'; baseband + IQ-bias inlined)
+        └── pulse_channels     (channel_role discriminator; resonator-owned channels only)
+            channel_role values:
+              'measure'        – resonator measure channel
+              'acquire'        – resonator acquire channel (acq_delay/width/sync/use_weights)
+              'reset_resonator'– resonator reset channel   (reset_delay)
+            └── calibratable_pulses (owner_uuid + pulse_role discriminator)
 ```
 
 The database URL defaults to `sqlite:///./qupboard.db` and can be overridden with the `DATABASE_URL` environment

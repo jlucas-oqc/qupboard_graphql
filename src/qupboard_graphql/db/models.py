@@ -5,9 +5,9 @@ Table hierarchy
 ---------------
 hardware_models
   └─ qubits  (FK → hardware_models)
-       ├─ physical_channels        (FK → qubits, channel_kind = 'qubit' | 'resonator')
+       ├─ physical_channels        (FK → qubits OR resonators, channel_kind = 'qubit' | 'resonator')
        │    baseband and IQ-bias columns inlined here
-       ├─ pulse_channels           (FK → qubits, channel_role discriminator)
+       ├─ pulse_channels           (FK → qubits OR resonators, channel_role discriminator)
        │    channel_role values:
        │      'drive'            – qubit drive channel
        │      'second_state'     – second-state pulse channel (ss_active, ss_delay)
@@ -22,7 +22,9 @@ hardware_models
        ├─ zx_pi_4_comps            (FK → qubits, one per CR pair)
        │    └─ calibratable_pulses (pulse_role = 'zx_precomp' | 'zx_postcomp', nullable)
        │    phase_comp_x_pi_2 inlined on qubits
-       └─ res_uuid inlined on qubits (resonator has no other data columns)
+       └─ resonators               (FK → qubits, one-to-one)
+            ├─ physical_channels   (FK → resonators, channel_kind = 'resonator')
+            └─ pulse_channels      (FK → resonators, channel_role = 'measure' | 'acquire' | 'reset_resonator')
 """
 
 import math
@@ -90,9 +92,15 @@ class PhysicalChannelORM(Base):
     iq_bias: Mapped[str] = mapped_column(String, nullable=False)
 
     qubit_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("qubits.uuid"), nullable=True)
+    resonator_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("resonators.uuid"), nullable=True)
+
     qubit: Mapped["QubitORM | None"] = relationship(
-        back_populates="physical_channels",
+        back_populates="physical_channel",
         foreign_keys=[qubit_uuid],
+    )
+    resonator: Mapped["ResonatorORM | None"] = relationship(
+        back_populates="physical_channel",
+        foreign_keys=[resonator_uuid],
     )
 
 
@@ -170,6 +178,7 @@ class PulseChannelORM(Base):
     reset_delay: Mapped[float | None] = mapped_column(Float, nullable=True, default=None)
 
     qubit_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("qubits.uuid"), nullable=True)
+    resonator_uuid: Mapped[UUID | None] = mapped_column(ForeignKey("resonators.uuid"), nullable=True)
 
     pulse: Mapped["CalibratablePulseORM | None"] = relationship(
         primaryjoin="and_(CalibratablePulseORM.owner_uuid == PulseChannelORM.uuid,"
@@ -273,6 +282,46 @@ class ZxPi4CompORM(Base):
 
 
 # ---------------------------------------------------------------------------
+# Resonator  (one-to-one with Qubit)
+# ---------------------------------------------------------------------------
+
+
+class ResonatorORM(Base):
+    __tablename__ = "resonators"
+
+    uuid: Mapped[UUID] = mapped_column(primary_key=True)
+
+    qubit_uuid: Mapped[UUID] = mapped_column(ForeignKey("qubits.uuid"), nullable=False, unique=True)
+    qubit: Mapped["QubitORM"] = relationship(back_populates="resonator")
+
+    # One resonator physical channel
+    physical_channel: Mapped["PhysicalChannelORM | None"] = relationship(
+        back_populates="resonator",
+        foreign_keys="PhysicalChannelORM.resonator_uuid",
+        cascade="all, delete-orphan",
+        uselist=False,
+    )
+
+    # Resonator pulse channels (measure, acquire, reset_resonator)
+    pulse_channels: Mapped[list["PulseChannelORM"]] = relationship(
+        foreign_keys="PulseChannelORM.resonator_uuid",
+        cascade="all, delete-orphan",
+    )
+
+    @property
+    def measure_channel(self) -> "PulseChannelORM | None":
+        return next((c for c in self.pulse_channels if c.channel_role == "measure"), None)
+
+    @property
+    def acquire_channel(self) -> "PulseChannelORM | None":
+        return next((c for c in self.pulse_channels if c.channel_role == "acquire"), None)
+
+    @property
+    def reset_resonator_channel(self) -> "PulseChannelORM | None":
+        return next((c for c in self.pulse_channels if c.channel_role == "reset_resonator"), None)
+
+
+# ---------------------------------------------------------------------------
 # Qubit
 # ---------------------------------------------------------------------------
 
@@ -288,23 +337,29 @@ class QubitORM(Base):
     direct_x_pi: Mapped[bool] = mapped_column(Boolean, default=False)
     # Inlined XPi2Comp
     phase_comp_x_pi_2: Mapped[float] = mapped_column(Float, default=0.0)
-    # Inlined Resonator UUID (resonator has no other data columns)
-    res_uuid: Mapped[UUID] = mapped_column(nullable=False)
 
     hardware_model_id: Mapped[UUID | None] = mapped_column(ForeignKey("hardware_models.id"), nullable=True)
     hardware_model: Mapped["HardwareModelORM | None"] = relationship(back_populates="qubits")
 
-    # Both qubit and resonator physical channels FK here (channel_kind discriminates)
-    physical_channels: Mapped[list["PhysicalChannelORM"]] = relationship(
+    # Qubit physical channel (channel_kind = 'qubit')
+    physical_channel: Mapped["PhysicalChannelORM | None"] = relationship(
         back_populates="qubit",
         foreign_keys="PhysicalChannelORM.qubit_uuid",
         cascade="all, delete-orphan",
+        uselist=False,
     )
 
-    # All pulse channels for this qubit (all roles)
+    # All qubit-owned pulse channels (drive, second_state, freq_shift, reset_qubit)
     pulse_channels: Mapped[list["PulseChannelORM"]] = relationship(
         foreign_keys="PulseChannelORM.qubit_uuid",
         cascade="all, delete-orphan",
+    )
+
+    # One-to-one resonator
+    resonator: Mapped["ResonatorORM | None"] = relationship(
+        back_populates="qubit",
+        cascade="all, delete-orphan",
+        uselist=False,
     )
 
     @property
@@ -320,20 +375,8 @@ class QubitORM(Base):
         return next((c for c in self.pulse_channels if c.channel_role == "freq_shift"), None)
 
     @property
-    def measure_channel(self) -> "PulseChannelORM | None":
-        return next((c for c in self.pulse_channels if c.channel_role == "measure"), None)
-
-    @property
-    def acquire_channel(self) -> "PulseChannelORM | None":
-        return next((c for c in self.pulse_channels if c.channel_role == "acquire"), None)
-
-    @property
     def reset_qubit_channel(self) -> "PulseChannelORM | None":
         return next((c for c in self.pulse_channels if c.channel_role == "reset_qubit"), None)
-
-    @property
-    def reset_resonator_channel(self) -> "PulseChannelORM | None":
-        return next((c for c in self.pulse_channels if c.channel_role == "reset_resonator"), None)
 
     cross_resonance_channels: Mapped[list["CrossResonanceChannelORM"]] = relationship(
         cascade="all, delete-orphan",

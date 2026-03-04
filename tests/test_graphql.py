@@ -25,23 +25,43 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
                             discriminatorImag
                             directXPi
                             phaseCompXPi2
-                            resUuid
-                            physicalChannels {
-                                edges {
-                                    node {
-                                        uuid
-                                        channelKind
-                                        nameIndex
-                                        blockSize
-                                        defaultAmplitude
-                                        switchBox
-                                        swapReadoutIq
-                                        basebandUuid
-                                        basebandFrequency
-                                        basebandIfFrequency
-                                        iqBias
+                            resonator {
+                                uuid
+                                physicalChannel {
+                                    uuid
+                                    channelKind
+                                    nameIndex
+                                    blockSize
+                                    defaultAmplitude
+                                    switchBox
+                                    swapReadoutIq
+                                    basebandUuid
+                                    basebandFrequency
+                                    basebandIfFrequency
+                                    iqBias
+                                }
+                                pulseChannels {
+                                    edges {
+                                        node {
+                                            uuid
+                                            channelRole
+                                            frequency
+                                        }
                                     }
                                 }
+                            }
+                            physicalChannel {
+                                uuid
+                                channelKind
+                                nameIndex
+                                blockSize
+                                defaultAmplitude
+                                switchBox
+                                swapReadoutIq
+                                basebandUuid
+                                basebandFrequency
+                                basebandIfFrequency
+                                iqBias
                             }
                             pulseChannels {
                                 edges {
@@ -176,18 +196,17 @@ def test_get_calibration(test_client: TestClient, hardware_model_uuid: str):
     reset_qubit = channels_by_role["reset_qubit"]
     assert reset_qubit["pulse"] is not None
 
-    reset_resonator = channels_by_role["reset_resonator"]
-    assert reset_resonator["pulse"] is not None
-
     assert first_qubit["phaseCompXPi2"] is not None
-    assert first_qubit["resUuid"] is not None
+    assert first_qubit["resonator"] is not None
+    assert first_qubit["resonator"]["uuid"] is not None
+    assert first_qubit["resonator"]["physicalChannel"] is not None
+    res_pc_kinds = {n["node"]["channelRole"] for n in first_qubit["resonator"]["pulseChannels"]["edges"]}
+    assert res_pc_kinds == {"measure", "acquire", "reset_resonator"}
     assert len(first_qubit["zxPi4Comps"]["edges"]) > 0
 
-    # Both physical channels (qubit + resonator) should be present
-    pc_nodes = first_qubit["physicalChannels"]["edges"]
-    assert len(pc_nodes) == 2
-    pc_kinds = {n["node"]["channelKind"] for n in pc_nodes}
-    assert pc_kinds == {"qubit", "resonator"}
+    # Qubit physical channel
+    assert first_qubit["physicalChannel"] is not None
+    assert first_qubit["physicalChannel"]["channelKind"] == "qubit"
 
 
 def test_cross_resonance_channels_are_filtered_by_role(test_client: TestClient, hardware_model_uuid: str):

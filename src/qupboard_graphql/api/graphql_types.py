@@ -20,6 +20,7 @@ from qupboard_graphql.db.models import (
     PhysicalChannelORM,
     PulseChannelORM,
     QubitORM,
+    ResonatorORM,
     ZxPi4CompORM,
 )
 
@@ -30,7 +31,7 @@ mapper = StrawberrySQLAlchemyMapper(
 
 @mapper.type(PhysicalChannelORM)
 class PhysicalChannel:
-    __exclude__ = ["qubit"]
+    __exclude__ = ["qubit", "resonator"]
 
 
 @mapper.type(CalibratablePulseORM)
@@ -50,6 +51,11 @@ class CrossResonanceChannel:
 
 @mapper.type(ZxPi4CompORM)
 class ZxPi4Comp:
+    __exclude__ = ["qubit"]
+
+
+@mapper.type(ResonatorORM)
+class Resonator:
     __exclude__ = ["qubit"]
 
 
