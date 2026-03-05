@@ -158,7 +158,7 @@ etc.).
 
 ### REST
 
-The REST API is available at `/rest`. Interactive OpenAPI docs are served at `/docs`.
+The REST API is mostly available at `/rest`. Interactive OpenAPI docs are served at `/docs`.
 
 | Method | Path                            | Description                                        |
 | ------ | ------------------------------- | -------------------------------------------------- |
@@ -169,7 +169,7 @@ The REST API is available at `/rest`. Interactive OpenAPI docs are served at `/d
 | `POST` | `/rest/logical-hardware/upload` | Create a hardware model from an uploaded JSON file |
 
 > **Before running any read queries**, you must upload at least one hardware model. Use the example
-> fixture included in the repository:
+> included in the repository:
 >
 > ```bash
 > curl -X POST http://localhost:8000/rest/logical-hardware/upload \
@@ -695,8 +695,8 @@ production-grade version:
 The GraphQL resolvers fetch related ORM objects via SQLAlchemy eager-loading, but this is done
 naively per-root-object. When fetching multiple calibrations each with many qubits, pulse channels,
 etc., this can produce an **N+1 query pattern**. A real service would use
-[Strawberry DataLoaders](https://strawberry.rocks/docs/guides/dataloaders) (backed by
-[`aiodataloader`](https://github.com/syrusakbary/aiodataloader) or similar) to batch and cache
+[Strawberry DataLoaders](https://strawberry.rocks/docs/guides/dataloaders) (backed by the built-in
+[`strawberry.dataloader`](https://strawberry.rocks/docs/guides/dataloaders)) to batch and cache
 database lookups within a single request.
 
 ### Authentication & Authorisation

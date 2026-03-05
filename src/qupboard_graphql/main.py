@@ -6,7 +6,7 @@ Usage::
 
     python -m qupboard_graphql.main
     # or, if installed as a script:
-    qupboard-graphql
+    qupboard
 """
 
 import uvicorn
