@@ -2,8 +2,8 @@
 
 ## Introduction
 
-Qupboard is a proof-of-concept service for storing and serving **hardware calibration models** via both a GraphQL and a
-REST API. It is built with:
+Qupboard is a proof-of-concept service for storing and serving **hardware calibration models** via
+both a GraphQL and a REST API. It is built with:
 
 - **[FastAPI](https://fastapi.tiangolo.com/)** – HTTP framework for the REST and GraphQL routers
 - **[Strawberry](https://strawberry.rocks/)** – GraphQL schema and query engine
@@ -11,8 +11,9 @@ REST API. It is built with:
 - **[Alembic](https://alembic.sqlalchemy.org/)** – database schema migrations
 - **[Pydantic](https://docs.pydantic.dev/)** – request/response validation and serialisation
 
-The default backing store is SQLite (`qupboard.db`), configured via the `DATABASE_URL` environment variable, but because
-we use SQLAlchemy, many other database engines may be used (postgres, MySQL, MariaDB etc).
+The default backing store is SQLite (`qupboard.db`), configured via the `DATABASE_URL` environment
+variable, but because we use SQLAlchemy, many other database engines may be used (postgres, MySQL,
+MariaDB etc).
 
 ______________________________________________________________________
 
@@ -25,7 +26,8 @@ ______________________________________________________________________
 
 ### Installation
 
-Clone the repository and install all dependencies (including dev dependencies) into a local virtual environment:
+Clone the repository and install all dependencies (including dev dependencies) into a local virtual
+environment:
 
 ```bash
 git clone <repo-url>
@@ -37,8 +39,8 @@ poetry install --with dev
 
 ### Configuration
 
-The application is configured via environment variables. All settings have sensible defaults so no configuration is
-required to run locally:
+The application is configured via environment variables. All settings have sensible defaults so no
+configuration is required to run locally:
 
 | Variable       | Default                   | Description                        |
 | -------------- | ------------------------- | ---------------------------------- |
@@ -54,7 +56,8 @@ export DATABASE_URL="sqlite:///./my_custom.db"
 
 ### Database setup
 
-Before running the application for the first time, apply all Alembic migrations to initialise the database schema:
+Before running the application for the first time, apply all Alembic migrations to initialise the
+database schema:
 
 ```bash
 poetry run alembic upgrade head
@@ -68,8 +71,8 @@ Start the server using the installed `qupboard` script:
 poetry run qupboard
 ```
 
-or alternatively, run the FastAPI app directly (assuming you are in the project root and have installed dependencies
-into a virtual environment):
+or alternatively, run the FastAPI app directly (assuming you are in the project root and have
+installed dependencies into a virtual environment):
 
 ```bash
 ./src/qupboard_graphql/main.py
@@ -85,8 +88,8 @@ The server starts on `http://0.0.0.0:8000`. The following endpoints are then ava
 
 ### Running the tests
 
-The test suite uses [pytest](https://pytest.org/) with an in-memory SQLite database so no prior database setup is
-required.
+The test suite uses [pytest](https://pytest.org/) with an in-memory SQLite database so no prior
+database setup is required.
 
 Run all tests:
 
@@ -150,7 +153,17 @@ ______________________________________________________________________
 
 ### Layers
 
-The application is split into four distinct layers that communicate in one direction only:
+The application is split into four distinct layers, each with a clear responsibility and minimal
+coupling to the others:
+
+- **API layer** (`api/`) – FastAPI routers for REST and GraphQL endpoints, plus the GraphQL schema
+  and resolvers.
+- **Schema layer** (`schemas/`) – Pydantic models defining the hardware model schema used for
+  request validation and serialisation in the REST API.
+- **Database layer** (`db/`) – SQLAlchemy ORM models, database session management, and mapping
+  helpers to convert between the Pydantic schema and the ORM models.
+- **DB Engine** – the actual database engine (SQLite by default, but configurable via
+  `DATABASE_URL`).
 
 ```mermaid
 flowchart TD
@@ -198,25 +211,43 @@ flowchart TD
 
 **REST read** (`GET /rest/logical-hardware/{uuid}`):
 
-1. `HardwareModelORM.get_by_uuid` fetches the row (and all related rows via eager-loaded relationships).
-1. `mapper_from_orm` reconstructs the full Pydantic `HardwareModel` and FastAPI serialises it to JSON.
+1. `HardwareModelORM.get_by_uuid` fetches the row (and all related rows via eager-loaded
+   relationships).
+1. `mapper_from_orm` reconstructs the full Pydantic `HardwareModel` and FastAPI serialises it to
+   JSON.
 
 **GraphQL read** (`getCalibration`, `getAllCalibrations`):
 
 1. Strawberry calls the resolver, which fetches the ORM row(s) directly.
-1. `strawberry-sqlalchemy-mapper` translates the ORM objects into Strawberry types on the fly — no manual mapping step
-   required.
+1. `strawberry-sqlalchemy-mapper` translates the ORM objects into Strawberry types on the fly — no
+   manual mapping step required.
 
-The GraphQL path therefore bypasses the Pydantic `schemas/` layer entirely; the Pydantic layer is only used by the REST
-API and the ORM mappers.
+The GraphQL path therefore bypasses the Pydantic `schemas/` layer entirely; the Pydantic layer is
+only used by the REST API and the ORM mappers. This means the database schema is effectively the
+source of truth for the GraphQL API: any change to the ORM models is immediately reflected in the
+GraphQL schema, with no separate mapping step required.
+
+The REST API is more decoupled from the database schema — the Pydantic models and manual mappers act
+as an explicit translation layer, giving the REST interface the freedom to evolve independently of
+the underlying data model. This makes the REST surface better suited to a stable, versioned contract
+for existing clients, while the GraphQL interface can track the database schema more closely and
+change more rapidly.
+
+Note that `strawberry-sqlalchemy-mapper` generates Strawberry types directly from the ORM models and
+wires up relationship fields as paginated connections (hence the `edges { node { … } }` shape seen
+in the example queries). Generic field-level filtering is not provided automatically; any
+specialised queries — for example, fetching only the qubits belonging to a particular QPU — would
+still be written as custom resolvers that return ORM objects in the same connection-style shape,
+leaving clients free to select whichever fields they need.
 
 ______________________________________________________________________
 
 ## Downloading the GraphQL Schema
 
-For general playing, it's best to simply use the interactive GraphiQL IDE at `http://localhost:8000/graphql` to explore
-the schema and test queries. However, for programmatic access to the schema (e.g. for code generation or client
-development), there are several ways to download it from the GraphQL endpoint once the server is running.
+For general playing, it's best to simply use the interactive GraphiQL IDE at
+`http://localhost:8000/graphql` to explore the schema and test queries. However, for programmatic
+access to the schema (e.g. for code generation or client development), there are several ways to
+download it from the GraphQL endpoint once the server is running.
 
 ### Option 1 – Strawberry CLI (recommended)
 
@@ -252,7 +283,8 @@ EOF
 
 ### GraphQL
 
-The GraphQL API is available at `/graphql`. An interactive GraphQL IDE is served at the same path in a browser.
+The GraphQL API is available at `/graphql`. An interactive GraphQL IDE is served at the same path in
+a browser.
 
 **Fetch a calibration by ID**
 
@@ -521,8 +553,8 @@ ______________________________________________________________________
 
 ### Schema
 
-The database schema mirrors the `HardwareModel` Pydantic schema and is defined as SQLAlchemy ORM models in
-`src/qupboard_graphql/db/models.py`. The table hierarchy is:
+The database schema mirrors the `HardwareModel` Pydantic schema and is defined as SQLAlchemy ORM
+models in `src/qupboard_graphql/db/models.py`. The table hierarchy is:
 
 ```
 hardware_models
@@ -550,13 +582,13 @@ hardware_models
             └── calibratable_pulses (owner_uuid + pulse_role discriminator)
 ```
 
-The database URL defaults to `sqlite:///./qupboard.db` and can be overridden with the `DATABASE_URL` environment
-variable.
+The database URL defaults to `sqlite:///./qupboard.db` and can be overridden with the `DATABASE_URL`
+environment variable.
 
 ### Migrations with Alembic
 
-Schema migrations are managed with [Alembic](https://alembic.sqlalchemy.org/). The Alembic project lives at the
-**project root**:
+Schema migrations are managed with [Alembic](https://alembic.sqlalchemy.org/). The Alembic project
+lives at the **project root**:
 
 ```
 alembic.ini          # Alembic configuration
@@ -565,8 +597,9 @@ alembic/
 └── versions/        # Migration scripts
 ```
 
-`env.py` automatically reads `DATABASE_URL` from the application settings, so no manual URL configuration is required.
-`render_as_batch=True` is enabled to support SQLite's limited `ALTER TABLE` capabilities.
+`env.py` automatically reads `DATABASE_URL` from the application settings, so no manual URL
+configuration is required. `render_as_batch=True` is enabled to support SQLite's limited
+`ALTER TABLE` capabilities.
 
 All commands below assume they are run from the **project root**.
 
@@ -600,7 +633,8 @@ poetry run alembic revision --autogenerate -m "describe_your_change"
 poetry run alembic downgrade -1
 ```
 
-**Stamp an existing database without running migrations** (useful when the schema was created outside of Alembic)
+**Stamp an existing database without running migrations** (useful when the schema was created
+outside of Alembic)
 
 ```bash
 poetry run alembic stamp head
