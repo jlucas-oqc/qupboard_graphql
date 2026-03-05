@@ -236,9 +236,9 @@ change more rapidly.
 Note that `strawberry-sqlalchemy-mapper` generates Strawberry types directly from the ORM models and
 wires up relationship fields as paginated connections (hence the `edges { node { … } }` shape seen
 in the example queries). Generic field-level filtering is not provided automatically; any
-specialised queries — for example, fetching only the qubits belonging to a particular QPU — would
-still be written as custom resolvers that return ORM objects in the same connection-style shape,
-leaving clients free to select whichever fields they need.
+specialised queries (for example, fetching a subset of the qubits filtered by fidelity belonging to
+a particular QPU) would still be written as custom resolvers that return ORM objects in the same
+connection-style shape, leaving clients free to select whichever fields they need.
 
 ______________________________________________________________________
 
