@@ -162,13 +162,13 @@ flowchart TD
     end
 
     subgraph schemas ["schemas/"]
-        HM["hardware_model.py\n(Pydantic models)"]
+        HM["hardware_model.py<br/>(Pydantic models)"]
     end
 
     subgraph db ["db/"]
-        TO["mapper_to_orm.py\nPydantic → ORM"]
-        FROM["mapper_from_orm.py\nORM → Pydantic"]
-        ORM["models.py\n(SQLAlchemy ORM)\nrepository.py · session.py"]
+        TO["mapper_to_orm.py<br/>Pydantic → ORM"]
+        FROM["mapper_from_orm.py<br/>ORM → Pydantic"]
+        ORM["models.py<br/>(SQLAlchemy ORM)<br/>repository.py · session.py"]
     end
 
     DB[("SQLite / PostgreSQL / …")]
@@ -180,7 +180,7 @@ flowchart TD
     TO --> ORM
     ORM --> FROM
     FROM -->|"reads via"| HM
-    GQL -->|"reads directly\n(strawberry-sqlalchemy-mapper)"| ORM
+    GQL -->|"reads directly<br/>(strawberry-sqlalchemy-mapper)"| ORM
     ORM <--> DB
 ```
 
