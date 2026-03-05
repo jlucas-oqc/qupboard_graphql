@@ -6,33 +6,13 @@ FastAPI-compatible generator dependency that yields a per-request
 :class:`~sqlalchemy.orm.Session`.
 """
 
-from sqlalchemy import create_engine, Engine
+from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, Session
 from typing import Generator
 
 from qupboard_graphql.config import settings
 
-_engine: Engine | None = None
-
-
-def get_engine() -> Engine:
-    """Return the shared SQLAlchemy engine, creating it on the first call.
-
-    The engine is created once (singleton pattern) using the URL from
-    :attr:`~qupboard_graphql.config.Settings.DATABASE_URL`.  SQLite's
-    ``check_same_thread`` restriction is disabled so that the engine can be
-    used safely inside FastAPI's async context.
-
-    Returns:
-        The application-wide :class:`~sqlalchemy.engine.Engine` instance.
-    """
-    global _engine
-    if _engine is None:
-        _engine = create_engine(
-            settings.DATABASE_URL,
-            connect_args={"check_same_thread": False},
-        )
-    return _engine
+engine = create_engine(settings.DATABASE_URL, connect_args={"check_same_thread": False})
 
 
 def get_db() -> Generator[Session, None, None]:
@@ -44,7 +24,7 @@ def get_db() -> Generator[Session, None, None]:
     Yields:
         An active :class:`~sqlalchemy.orm.Session` bound to the shared engine.
     """
-    SessionLocal = sessionmaker(bind=get_engine(), autocommit=False, autoflush=False)
+    SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
     db: Session = SessionLocal()
     try:
         yield db

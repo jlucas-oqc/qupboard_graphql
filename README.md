@@ -467,7 +467,7 @@ qupboard_graphql/
 │       │   ├── models.py           # ORM models mirroring the hardware model schema
 │       │   ├── mapper_from_orm.py  # ORM → Pydantic conversion helpers
 │       │   ├── mapper_to_orm.py    # Pydantic → ORM conversion helpers
-│       │   └── session.py          # Engine, SessionLocal, and get_db dependency
+│       │   └── session.py          # Module-level engine instance and get_db dependency
 │       └── schemas/
 │           └── hardware_model.py   # Pydantic schema for HardwareModel
 └── tests/
@@ -721,11 +721,11 @@ equivalent validation. Strawberry supports Pydantic integration via
 
 ### Async Database Access
 
-The application uses a synchronous SQLAlchemy session (`SessionLocal`). FastAPI automatically runs
-synchronous dependencies in a thread pool, but this still blocks a worker thread per request. A
-production service under concurrent load should use SQLAlchemy's async engine (`create_async_engine`
-\+ `AsyncSession`) together with an async-compatible driver (e.g. `aiosqlite` for SQLite, `asyncpg`
-for PostgreSQL) to avoid blocking the event loop.
+The application uses a synchronous SQLAlchemy session (created per-request inside `get_db`). FastAPI
+automatically runs synchronous dependencies in a thread pool, but this still blocks a worker thread
+per request. A production service under concurrent load should use SQLAlchemy's async engine
+(`create_async_engine` + `AsyncSession`) together with an async-compatible driver (e.g. `aiosqlite`
+for SQLite, `asyncpg` for PostgreSQL) to avoid blocking the event loop.
 
 ### Caching
 

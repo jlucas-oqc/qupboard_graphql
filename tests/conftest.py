@@ -1,6 +1,5 @@
 from pathlib import Path
 
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -13,7 +12,6 @@ from qupboard_graphql.schemas.hardware_model import HardwareModel
 
 data_path = Path(__file__).parent / "data"
 
-SQLALCHEMY_TEST_DATABASE_URL = "sqlite:///:memory:"
 _JSON_HEADERS = {"Content-Type": "application/json"}
 
 
@@ -46,7 +44,7 @@ def db_engine():
     build all tables once.  Dropped when the session ends.
     """
     engine = create_engine(
-        SQLALCHEMY_TEST_DATABASE_URL,
+        "sqlite:///:memory:",
         connect_args={"check_same_thread": False},
     )
     Base.metadata.create_all(bind=engine)

@@ -2,13 +2,9 @@
 FastAPI application factory for qupboard_graphql.
 
 Assembles the REST router, GraphQL router, and root/health-check router into
-a single FastAPI application.  Database tables are created on startup via the
-lifespan context manager.  A custom OpenAPI schema is injected so that the
+a single FastAPI application.  A custom OpenAPI schema is injected so that the
 GraphQL endpoint appears correctly in the generated docs.
 """
-
-from contextlib import asynccontextmanager
-from typing import AsyncGenerator
 
 from fastapi import FastAPI
 from fastapi.openapi.utils import get_openapi
@@ -17,25 +13,6 @@ from qupboard_graphql.api.graphql import graphql_router
 from qupboard_graphql.api.rest import rest_router
 from qupboard_graphql.api.root import root_router
 from qupboard_graphql.config import settings
-from qupboard_graphql.db.database import Base
-from qupboard_graphql.db.session import get_engine
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI) -> AsyncGenerator[None, None]:
-    """FastAPI lifespan context manager.
-
-    Creates all SQLAlchemy-declared tables on startup and performs any
-    necessary teardown on shutdown.
-
-    Args:
-        app: The FastAPI application instance being started.
-
-    Yields:
-        Control to the running application.
-    """
-    Base.metadata.create_all(bind=get_engine())
-    yield
 
 
 def _custom_openapi(app: FastAPI) -> dict:
@@ -80,7 +57,7 @@ def get_app() -> FastAPI:
     Returns:
         A fully-configured :class:`fastapi.FastAPI` application instance.
     """
-    app = FastAPI(lifespan=lifespan)
+    app = FastAPI()
     app.include_router(root_router, prefix="")
     app.include_router(rest_router, prefix=settings.REST_PATH)
     app.include_router(graphql_router, prefix=settings.GRAPHQL_PATH)
