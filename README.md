@@ -20,13 +20,13 @@ ______________________________________________________________________
 ## Table of Contents
 
 - [Getting Started](#getting-started)
+- [Example Queries](#example-queries)
+- [GraphQL Client Access](#graphql-client-access)
 - [Project Structure](#project-structure)
 - [Architecture](#architecture)
-- [Known Limitations / Not Implemented](#known-limitations--not-implemented)
-- [GraphQL Client Access](#graphql-client-access)
-- [Example Queries](#example-queries)
 - [Database Implementation](#database-implementation)
 - [Database Migrations with Alembic](#database-migrations-with-alembic)
+- [Known Limitations / Not Implemented](#known-limitations--not-implemented)
 
 ______________________________________________________________________
 
@@ -44,7 +44,7 @@ environment:
 
 ```bash
 git clone https://github.com/jlucas-oqc/qubboard_graphql.git
-cd qupboard_graphql
+cd qubboard_graphql
 poetry install --with dev
 ```
 
@@ -140,6 +140,10 @@ The docs are then available at `http://127.0.0.1:8000`. The server watches for c
 Markdown source files in `docs/` and the Python source files in `src/`, and automatically rebuilds
 the site on any change.
 
+> **Note:** MkDocs and the application server both default to port 8000. If you need to run both
+> simultaneously, start MkDocs on a different port:
+> `poetry run mkdocs serve --dev-addr 127.0.0.1:8001`.
+
 To produce a self-contained static site (output written to `site/`):
 
 ```bash
@@ -150,13 +154,298 @@ The `site/` directory is excluded from version control via `.gitignore`. The sta
 served by any web server or deployed to any static hosting provider (GitHub Pages, GitLab Pages, S3,
 etc.).
 
+## Example Queries
+
+### REST
+
+The REST API is available at `/rest`. Interactive OpenAPI docs are served at `/docs`.
+
+| Method | Path                            | Description                                        |
+| ------ | ------------------------------- | -------------------------------------------------- |
+| `GET`  | `/healthcheck`                  | Health check – returns `OK`                        |
+| `GET`  | `/rest/logical-hardware`        | List all hardware model UUIDs                      |
+| `GET`  | `/rest/logical-hardware/{uuid}` | Fetch a hardware model by UUID                     |
+| `POST` | `/rest/logical-hardware`        | Create a hardware model from a JSON body           |
+| `POST` | `/rest/logical-hardware/upload` | Create a hardware model from an uploaded JSON file |
+
+> **Before running any read queries**, you must upload at least one hardware model. Use the example
+> fixture included in the repository:
+>
+> ```bash
+> curl -X POST http://localhost:8000/rest/logical-hardware/upload \
+>      -F "file=@tests/data/calibration_pydantic.json;type=application/json"
+> ```
+>
+> The response will contain the UUID of the newly created model — use that UUID in the read queries
+> below.
+
+**List all hardware model IDs**
+
+```bash
+curl http://localhost:8000/rest/logical-hardware
+```
+
+**Fetch a specific hardware model**
+
+```bash
+curl http://localhost:8000/rest/logical-hardware/<uuid>
+```
+
+**Create a hardware model from a JSON body**
+
+```bash
+curl -X POST http://localhost:8000/rest/logical-hardware \
+     -H "Content-Type: application/json" \
+     -d @path/to/calibration.json
+```
+
+**Upload a hardware model from a file**
+
+```bash
+curl -X POST http://localhost:8000/rest/logical-hardware/upload \
+     -F "file=@path/to/calibration.json;type=application/json"
+```
+
 ______________________________________________________________________
+
+### GraphQL
+
+The GraphQL API is available at `/graphql`. An interactive GraphQL IDE is served at the same path in
+a browser.
+
+> **Before running any read queries**, ensure you have uploaded at least one hardware model via the
+> REST API (see above).
+
+**List all stored hardware model IDs**
+
+Use this query first to obtain a valid UUID to pass to `getCalibration`:
+
+```graphql
+{
+  getAllHardwareModelIds
+}
+```
+
+**Fetch a calibration by ID**
+
+Pass a UUID returned by `getAllHardwareModelIds` as the `id` argument:
+
+```graphql
+{
+  getCalibration(id: "<uuid>") {
+    id
+    version
+    calibrationId
+    logicalConnectivity
+    qubits {
+      edges {
+        node {
+          uuid
+          qubitKey
+          physicalChannel {
+            uuid
+            channelKind
+            basebandFrequency
+          }
+          pulseChannels {
+            edges {
+              node {
+                uuid
+                channelRole
+                frequency
+                pulse {
+                  id
+                  waveformType
+                  width
+                  amp
+                }
+              }
+            }
+          }
+          resonator {
+            uuid
+            pulseChannels {
+              edges {
+                node {
+                  uuid
+                  channelRole
+                  frequency
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+```
+
+> For an exhaustive query that selects every available field (including `crossResonanceChannels`,
+> `crossResonanceCancellationChannels`, `zxPi4Comps`, pulse sub-fields, etc.), see
+> `test_get_calibration` in [`tests/test_graphql.py`](tests/test_graphql.py).
+
+**Fetch the first page of qubits for a calibration**
+
+The `qubits` field (and every other relationship collection) uses relay-style cursor pagination
+generated automatically by `strawberry-sqlalchemy-mapper`. Pass `first` to set the page size and
+`after` to advance to the next page using the `endCursor` returned in `pageInfo`.
+
+```graphql
+{
+  getCalibration(id: "<uuid>") {
+    id
+    calibrationId
+    qubits(first: 5, after: null) {
+      edges {
+        cursor
+        node {
+          uuid
+          qubitKey
+        }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}
+```
+
+Take `endCursor` from the response and pass it as `after` to fetch the next page:
+
+```graphql
+{
+  getCalibration(id: "<uuid>") {
+    qubits(first: 5, after: "<endCursor from previous response>") {
+      edges {
+        node { uuid qubitKey }
+      }
+      pageInfo {
+        hasNextPage
+        endCursor
+      }
+    }
+  }
+}
+```
+
+The full set of pagination arguments supported on `qubits` (and all other collections):
+
+| Argument | Description                                                    |
+| -------- | -------------------------------------------------------------- |
+| `first`  | Page size going forward                                        |
+| `after`  | Cursor from a previous `endCursor` — fetch the next page       |
+| `last`   | Page size going backward                                       |
+| `before` | Cursor from a previous `startCursor` — fetch the previous page |
+
+**Fetch all calibrations (first page)**
+
+`getAllCalibrations` uses the same relay-style cursor pagination as relationship fields. Pass
+`first`/`after` to page forward and `last`/`before` to page backward.
+
+```graphql
+{
+  getAllCalibrations(first: 20) {
+    edges {
+      cursor
+      node {
+        id
+        version
+        calibrationId
+      }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+```
+
+To fetch the next page, pass `endCursor` from `pageInfo` as the `after` argument:
+
+```graphql
+{
+  getAllCalibrations(first: 20, after: "<endCursor from previous response>") {
+    edges {
+      node { id calibrationId }
+    }
+    pageInfo {
+      hasNextPage
+      endCursor
+    }
+  }
+}
+```
+
+______________________________________________________________________
+
+## GraphQL Client Access
+
+### Interactive IDE
+
+The easiest way to explore the schema and test queries is the interactive GraphiQL IDE served at
+`http://localhost:8000/graphql` in a browser.
+
+### Downloading the Schema
+
+For programmatic access (e.g. for code generation or client development), there are several ways to
+obtain the schema.
+
+**Option 1 – Strawberry CLI (recommended, no server required)**
+
+```bash
+poetry run strawberry export-schema qupboard_graphql.api.graphql:schema
+```
+
+**Option 2 – Introspection query via `curl`**
+
+```bash
+curl -s -X POST http://localhost:8000/graphql \
+     -H "Content-Type: application/json" \
+     -d '{"query": "{ __schema { types { name } } }"}' | jq
+```
+
+For the full schema definition:
+
+```bash
+curl -s -X POST http://localhost:8000/graphql \
+     -H "Content-Type: application/json" \
+     -d @- <<'EOF'
+{
+  "query": "query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } }"
+}
+EOF
+```
+
+### GraphQL Client Libraries
+
+The `/graphql` endpoint is standard GraphQL-over-HTTP. For client development, any GraphQL client
+library that supports schema introspection and query execution can be used. The following are some
+popular options:
+
+| Language   | Library                                                           | Sync | Async | Introspection      | Notes                                                                                                                                                                                                                                                                                                                              |
+| ---------- | ----------------------------------------------------------------- | ---- | ----- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Python     | [gql](https://gql.readthedocs.io/)                                | ✅   | ✅    | ✅ runtime         | <ul><li>Most widely used Python GraphQL client</li><li>Multiple transports: HTTP, WebSocket, aiohttp</li><li>Validates queries against the live schema locally before sending</li><li>No generated types</li></ul>                                                                                                                 |
+| Python     | [strawberry-graphql](https://strawberry.rocks/docs/guides/client) | ✅   | ✅    | ❌                 | <ul><li>Minimal built-in HTTP client</li><li>No transport abstraction or local schema validation</li><li>Convenient if Strawberry is already a dependency; otherwise prefer `gql`</li></ul>                                                                                                                                        |
+| Python     | [ariadne-codegen](https://github.com/mirumee/ariadne-codegen)     | ✅   | ✅    | ✅ at codegen time | <ul><li>Generates a fully typed, dataclass-based client from <code>.graphql</code> query files</li><li>Full IDE auto-complete and static analysis</li><li>Requires a code-generation step; generated code must be kept in sync with the schema</li></ul>                                                                           |
+| JavaScript | [Apollo Client](https://www.apollographql.com/docs/react/)        | ❌   | ✅    | ✅ via DevTools    | <ul><li>De-facto standard for GraphQL in the browser</li><li>Built-in normalised cache, reactive updates</li><li>Primarily React-oriented; heavier dependency for non-UI use</li></ul>                                                                                                                                             |
+| JavaScript | [graphql-request](https://github.com/jasonkuhrt/graphql-request)  | ✅   | ✅    | ❌                 | <ul><li>Minimal zero-dependency client; ideal for Node.js scripts and serverless functions</li><li>No caching or schema validation</li></ul>                                                                                                                                                                                       |
+| TypeScript | [graphql-codegen](https://the-guild.dev/graphql/codegen)          | ✅   | ✅    | ✅ at codegen time | <ul><li>Generates fully typed query hooks / SDK from <code>.graphql</code> files</li><li>Pluggable: outputs React hooks, plain fetch, urql, etc.</li><li>Requires a code-generation step; generated code must be kept in sync with the schema</li></ul>                                                                            |
+| TypeScript | [urql](https://formidable.com/open-source/urql/)                  | ❌   | ✅    | ✅ via exchanges   | <ul><li>Lightweight, framework-agnostic (React, Vue, Svelte)</li><li>Extensible via exchanges (normalised cache, schema awareness, auth)</li><li>Smaller bundle than Apollo Client</li></ul>                                                                                                                                       |
+| Rust       | [cynic](https://cynic-rs.dev/)                                    | ✅   | ✅    | ✅ at codegen time | <ul><li>Generates strongly typed Rust structs from <code>.graphql</code> query files at compile time</li><li>Zero-cost schema validation; incompatible queries are compile errors</li><li>Requires a code-generation step</li></ul>                                                                                                |
+| Rust       | [graphql-client](https://github.com/graphql-rust/graphql-client)  | ✅   | ✅    | ✅ at codegen time | <ul><li>Derive-macro based; generates request/response types from <code>.graphql</code> files</li><li>Works with any HTTP client (reqwest, surf, etc.)</li><li>Requires a code-generation step</li></ul>                                                                                                                           |
+| C++        | [CaffQL](https://github.com/caffeinetv/CaffQL)                    | ✅   | ❌    | ✅ at codegen time | <ul><li>Generates C++ types from a GraphQL schema and query files</li><li>The most feature-complete dedicated C++ option, but largely unmaintained since 2020</li><li>Requires a code-generation step</li></ul>                                                                                                                    |
+| C++        | libcurl / [cpr](https://docs.libcpr.org/) + manual                | ✅   | ✅    | ❌                 | <ul><li>No actively maintained, general-purpose C++ GraphQL client library exists</li><li>Typical approach: POST JSON with libcurl or cpr and parse the response with <a href="https://github.com/nlohmann/json">nlohmann/json</a> or similar</li><li>No schema validation or generated types without additional tooling</li></ul> |
 
 ## Project Structure
 
 ```
 qupboard_graphql/
 ├── pyproject.toml                  # Project metadata and dependencies
+├── poetry.toml                     # Poetry local venv configuration
 ├── alembic.ini                     # Alembic configuration
 ├── alembic/
 │   ├── env.py                      # Migration environment (wired to ORM models)
@@ -184,7 +473,9 @@ qupboard_graphql/
 └── tests/
     ├── conftest.py
     ├── test_graphql.py
+    ├── test_model_loader.py
     ├── test_rest.py
+    ├── test_root.py
     └── data/                       # Sample calibration JSON fixtures
 ```
 
@@ -280,494 +571,6 @@ in the example queries). Generic field-level filtering is not provided automatic
 specialised queries (for example, fetching a subset of the qubits filtered by fidelity belonging to
 a particular QPU) would still be written as custom resolvers that return ORM objects in the same
 connection-style shape, leaving clients free to select whichever fields they need.
-
-______________________________________________________________________
-
-## Known Limitations / Not Implemented
-
-This is a proof-of-concept service. The following are notable omissions that would be required in a
-production-grade version:
-
-### DataLoaders (N+1 query problem)
-
-The GraphQL resolvers fetch related ORM objects via SQLAlchemy eager-loading, but this is done
-naively per-root-object. When fetching multiple calibrations each with many qubits, pulse channels,
-etc., this can produce an **N+1 query pattern**. A real service would use
-[Strawberry DataLoaders](https://strawberry.rocks/docs/guides/dataloaders) (backed by
-[`aiodataloader`](https://github.com/syrusakbary/aiodataloader) or similar) to batch and cache
-database lookups within a single request.
-
-### Authentication & Authorisation
-
-There is no authentication or authorisation. A production service would require at minimum:
-
-- **Authentication** – e.g. OAuth 2.0 / OIDC JWT bearer tokens, API keys, or mutual TLS.
-- **Authorisation** – role-based or attribute-based access control to restrict which clients can
-  read or write which hardware models.
-
-### GraphQL Mutations
-
-The GraphQL API is currently read-only. A real service would expose **mutations** for creating,
-updating, and deleting hardware models, with appropriate input validation mirroring what the REST
-`POST` endpoint does today.
-
-### Input Validation on the GraphQL Layer
-
-Pydantic validation is only applied on the REST path. GraphQL mutations (once added) should perform
-equivalent validation. Strawberry supports Pydantic integration via
-`strawberry.experimental.pydantic` that could be used to share the schema definitions.
-
-### Async Database Access
-
-The application uses a synchronous SQLAlchemy session (`SessionLocal`) served via FastAPI's
-`run_in_threadpool`. A production service under concurrent load should use SQLAlchemy's async engine
-(`create_async_engine` + `AsyncSession`) together with an async-compatible driver (e.g. `aiosqlite`
-for SQLite, `asyncpg` for PostgreSQL) to avoid blocking the event loop.
-
-### Caching
-
-Frequently-read calibration models are re-fetched from the database on every request. A caching
-layer (e.g. Redis with an appropriate TTL, or an in-process LRU cache invalidated on write) would
-dramatically reduce database load for read-heavy workloads.
-
-### Observability
-
-There is no structured logging, metrics, or distributed tracing. A production service should emit:
-
-- **Structured logs** (e.g. via `structlog`) including request IDs for correlation.
-- **Metrics** (e.g. Prometheus counters/histograms via `prometheus-fastapi-instrumentator`).
-- **Traces** (e.g. OpenTelemetry spans covering HTTP requests and database queries).
-
-### Database Connection Pooling & Configuration
-
-The current SQLite default is not suitable for production. When switching to PostgreSQL or another
-server-side database, connection pool settings (`pool_size`, `max_overflow`, `pool_timeout`) should
-be tuned and exposed via configuration, and a connection health-check (`pool_pre_ping=True`) should
-be enabled.
-
-### REST API Versioning
-
-The REST endpoints have no version prefix (e.g. `/v1/rest/…`). A stable public API should be
-versioned from the start to allow breaking changes to be introduced without disrupting existing
-clients.
-
-### Error Handling
-
-Unhandled exceptions propagate as generic 500 responses with minimal detail. A real service would
-map domain errors (e.g. "model not found", "validation failed", "database constraint violated") to
-well-structured error responses with appropriate HTTP status codes, and equivalent
-[GraphQL error extensions](https://strawberry.rocks/docs/guides/errors) for the GraphQL path.
-
-______________________________________________________________________
-
-## GraphQL Client Access
-
-### Interactive IDE
-
-The easiest way to explore the schema and test queries is the interactive GraphiQL IDE served at
-`http://localhost:8000/graphql` in a browser.
-
-### Downloading the Schema
-
-For programmatic access (e.g. for code generation or client development), there are several ways to
-obtain the schema.
-
-**Option 1 – Strawberry CLI (recommended, no server required)**
-
-```bash
-poetry run strawberry export-schema qupboard_graphql.api.graphql:schema
-```
-
-**Option 2 – Introspection query via `curl`**
-
-```bash
-curl -s -X POST http://localhost:8000/graphql \
-     -H "Content-Type: application/json" \
-     -d '{"query": "{ __schema { types { name } } }"}' | jq
-```
-
-For the full schema definition:
-
-```bash
-curl -s -X POST http://localhost:8000/graphql \
-     -H "Content-Type: application/json" \
-     -d @- <<'EOF'
-{
-  "query": "query IntrospectionQuery { __schema { queryType { name } mutationType { name } subscriptionType { name } types { ...FullType } directives { name description locations args { ...InputValue } } } } fragment FullType on __Type { kind name description fields(includeDeprecated: true) { name description args { ...InputValue } type { ...TypeRef } isDeprecated deprecationReason } inputFields { ...InputValue } interfaces { ...TypeRef } enumValues(includeDeprecated: true) { name description isDeprecated deprecationReason } possibleTypes { ...TypeRef } } fragment InputValue on __InputValue { name description type { ...TypeRef } defaultValue } fragment TypeRef on __Type { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name ofType { kind name } } } } } } }"
-}
-EOF
-```
-
-### GraphQL Client Libraries
-
-The `/graphql` endpoint is standard GraphQL-over-HTTP. For client development, any GraphQL client
-library that supports schema introspection and query execution can be used. The following are some
-popular options:
-
-| Language   | Library                                                           | Sync | Async | Introspection      | Notes                                                                                                                                                                                                                                                                                                                              |
-| ---------- | ----------------------------------------------------------------- | ---- | ----- | ------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Python     | [gql](https://gql.readthedocs.io/)                                | ✅   | ✅    | ✅ runtime         | <ul><li>Most widely used Python GraphQL client</li><li>Multiple transports: HTTP, WebSocket, aiohttp</li><li>Validates queries against the live schema locally before sending</li><li>No generated types</li></ul>                                                                                                                 |
-| Python     | [strawberry-graphql](https://strawberry.rocks/docs/guides/client) | ✅   | ✅    | ❌                 | <ul><li>Minimal built-in HTTP client</li><li>No transport abstraction or local schema validation</li><li>Convenient if Strawberry is already a dependency; otherwise prefer `gql`</li></ul>                                                                                                                                        |
-| Python     | [ariadne-codegen](https://github.com/mirumee/ariadne-codegen)     | ✅   | ✅    | ✅ at codegen time | <ul><li>Generates a fully typed, dataclass-based client from <code>.graphql</code> query files</li><li>Full IDE auto-complete and static analysis</li><li>Requires a code-generation step; generated code must be kept in sync with the schema</li></ul>                                                                           |
-| JavaScript | [Apollo Client](https://www.apollographql.com/docs/react/)        | ❌   | ✅    | ✅ via DevTools    | <ul><li>De-facto standard for GraphQL in the browser</li><li>Built-in normalised cache, reactive updates</li><li>Primarily React-oriented; heavier dependency for non-UI use</li></ul>                                                                                                                                             |
-| JavaScript | [graphql-request](https://github.com/jasonkuhrt/graphql-request)  | ✅   | ✅    | ❌                 | <ul><li>Minimal zero-dependency client; ideal for Node.js scripts and serverless functions</li><li>No caching or schema validation</li></ul>                                                                                                                                                                                       |
-| TypeScript | [graphql-codegen](https://the-guild.dev/graphql/codegen)          | ✅   | ✅    | ✅ at codegen time | <ul><li>Generates fully typed query hooks / SDK from <code>.graphql</code> files</li><li>Pluggable: outputs React hooks, plain fetch, urql, etc.</li><li>Requires a code-generation step; generated code must be kept in sync with the schema</li></ul>                                                                            |
-| TypeScript | [urql](https://formidable.com/open-source/urql/)                  | ❌   | ✅    | ✅ via exchanges   | <ul><li>Lightweight, framework-agnostic (React, Vue, Svelte)</li><li>Extensible via exchanges (normalised cache, schema awareness, auth)</li><li>Smaller bundle than Apollo Client</li></ul>                                                                                                                                       |
-| Rust       | [cynic](https://cynic-rs.dev/)                                    | ✅   | ✅    | ✅ at codegen time | <ul><li>Generates strongly typed Rust structs from <code>.graphql</code> query files at compile time</li><li>Zero-cost schema validation; incompatible queries are compile errors</li><li>Requires a code-generation step</li></ul>                                                                                                |
-| Rust       | [graphql-client](https://github.com/graphql-rust/graphql-client)  | ✅   | ✅    | ✅ at codegen time | <ul><li>Derive-macro based; generates request/response types from <code>.graphql</code> files</li><li>Works with any HTTP client (reqwest, surf, etc.)</li><li>Requires a code-generation step</li></ul>                                                                                                                           |
-| C++        | [CaffQL](https://github.com/caffeinetv/CaffQL)                    | ✅   | ❌    | ✅ at codegen time | <ul><li>Generates C++ types from a GraphQL schema and query files</li><li>The most feature-complete dedicated C++ option, but largely unmaintained since 2020</li><li>Requires a code-generation step</li></ul>                                                                                                                    |
-| C++        | libcurl / [cpr](https://docs.libcpr.org/) + manual                | ✅   | ✅    | ❌                 | <ul><li>No actively maintained, general-purpose C++ GraphQL client library exists</li><li>Typical approach: POST JSON with libcurl or cpr and parse the response with <a href="https://github.com/nlohmann/json">nlohmann/json</a> or similar</li><li>No schema validation or generated types without additional tooling</li></ul> |
-
-## Example Queries
-
-### GraphQL
-
-The GraphQL API is available at `/graphql`. An interactive GraphQL IDE is served at the same path in
-a browser.
-
-**Fetch a calibration by ID**
-
-```graphql
-{
-  getCalibration(id: "d8b81172-fb8d-43f7-92dd-aff4dbc1defb") {
-    id
-    version
-    calibrationId
-    logicalConnectivity
-    qubits {
-      edges {
-        node {
-          uuid
-          qubitKey
-          meanZMapArgs
-          discriminatorReal
-          discriminatorImag
-          directXPi
-          phaseCompXPi2
-          physicalChannel {
-            uuid
-            channelKind
-            nameIndex
-            blockSize
-            defaultAmplitude
-            switchBox
-            swapReadoutIq
-            basebandUuid
-            basebandFrequency
-            basebandIfFrequency
-            iqBias
-          }
-          resonator {
-            uuid
-            physicalChannel {
-              uuid
-              channelKind
-              nameIndex
-              blockSize
-              defaultAmplitude
-              switchBox
-              swapReadoutIq
-              basebandUuid
-              basebandFrequency
-              basebandIfFrequency
-              iqBias
-            }
-            pulseChannels {
-              edges {
-                node {
-                  uuid
-                  channelRole
-                  frequency
-                  imbalance
-                  phaseIqOffset
-                  scaleReal
-                  scaleImag
-                  acqDelay
-                  acqWidth
-                  acqSync
-                  acqUseWeights
-                  resetDelay
-                  pulse {
-                    id
-                    waveformType
-                    width
-                    amp
-                    phase
-                    drag
-                    rise
-                    ampSetup
-                    stdDev
-                  }
-                }
-              }
-            }
-          }
-          pulseChannels {
-            edges {
-              node {
-                uuid
-                channelRole
-                frequency
-                imbalance
-                phaseIqOffset
-                scaleReal
-                scaleImag
-                ssActive
-                ssDelay
-                fsActive
-                fsAmp
-                fsPhase
-                resetDelay
-                pulse {
-                  id
-                  waveformType
-                  width
-                  amp
-                  phase
-                  drag
-                  rise
-                  ampSetup
-                  stdDev
-                }
-                pulseXPi {
-                  id
-                  waveformType
-                  width
-                  amp
-                  phase
-                  drag
-                  rise
-                  ampSetup
-                  stdDev
-                }
-              }
-            }
-          }
-          crossResonanceChannels {
-            edges {
-              node {
-                uuid
-                role
-                auxiliaryQubit
-                frequency
-                imbalance
-                phaseIqOffset
-                scaleReal
-                scaleImag
-                zxPi4Pulse {
-                  id
-                  waveformType
-                  width
-                  amp
-                  phase
-                  drag
-                  rise
-                  ampSetup
-                  stdDev
-                }
-              }
-            }
-          }
-          crossResonanceCancellationChannels {
-            edges {
-              node {
-                uuid
-                role
-                auxiliaryQubit
-                frequency
-                imbalance
-                phaseIqOffset
-                scaleReal
-                scaleImag
-              }
-            }
-          }
-          zxPi4Comps {
-            edges {
-              node {
-                uuid
-                auxiliaryQubit
-                phaseCompTargetZxPi4
-                pulseZxPi4TargetRotaryAmp
-                precompActive
-                postcompActive
-                useSecondState
-                useRotary
-                pulsePrecomp {
-                  id
-                  waveformType
-                  width
-                  amp
-                  phase
-                  drag
-                  rise
-                  ampSetup
-                  stdDev
-                }
-                pulsePostcomp {
-                  id
-                  waveformType
-                  width
-                  amp
-                  phase
-                  drag
-                  rise
-                  ampSetup
-                  stdDev
-                }
-              }
-            }
-          }
-        }
-      }
-    }
-  }
-}
-```
-
-**Fetch the first page of qubits for a calibration**
-
-The `qubits` field (and every other relationship collection) uses relay-style cursor pagination
-generated automatically by `strawberry-sqlalchemy-mapper`. Pass `first` to set the page size and
-`after` to advance to the next page using the `endCursor` returned in `pageInfo`.
-
-```graphql
-{
-  getCalibration(id: "d8b81172-fb8d-43f7-92dd-aff4dbc1defb") {
-    id
-    calibrationId
-    qubits(first: 5, after: null) {
-      edges {
-        cursor
-        node {
-          uuid
-          qubitKey
-        }
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-    }
-  }
-}
-```
-
-Take `endCursor` from the response and pass it as `after` to fetch the next page:
-
-```graphql
-{
-  getCalibration(id: "d8b81172-fb8d-43f7-92dd-aff4dbc1defb") {
-    qubits(first: 5, after: "<endCursor from previous response>") {
-      edges {
-        node { uuid qubitKey }
-      }
-      pageInfo {
-        hasNextPage
-        endCursor
-      }
-    }
-  }
-}
-```
-
-The full set of pagination arguments supported on `qubits` (and all other collections):
-
-| Argument | Description                                                    |
-| -------- | -------------------------------------------------------------- |
-| `first`  | Page size going forward                                        |
-| `after`  | Cursor from a previous `endCursor` — fetch the next page       |
-| `last`   | Page size going backward                                       |
-| `before` | Cursor from a previous `startCursor` — fetch the previous page |
-
-**List all stored hardware model IDs**
-
-```graphql
-{
-  getAllHardwareModelIds
-}
-```
-
-**Fetch all calibrations (first page)**
-
-`getAllCalibrations` uses the same relay-style cursor pagination as relationship fields. Pass
-`first`/`after` to page forward and `last`/`before` to page backward.
-
-```graphql
-{
-  getAllCalibrations(first: 20) {
-    edges {
-      cursor
-      node {
-        id
-        version
-        calibrationId
-      }
-    }
-    pageInfo {
-      hasNextPage
-      endCursor
-    }
-  }
-}
-```
-
-To fetch the next page, pass `endCursor` from `pageInfo` as the `after` argument:
-
-```graphql
-{
-  getAllCalibrations(first: 20, after: "<endCursor from previous response>") {
-    edges {
-      node { id calibrationId }
-    }
-    pageInfo {
-      hasNextPage
-      endCursor
-    }
-  }
-}
-```
-
-______________________________________________________________________
-
-### REST
-
-The REST API is available at `/rest`. Interactive OpenAPI docs are served at `/docs`.
-
-| Method | Path                            | Description                                        |
-| ------ | ------------------------------- | -------------------------------------------------- |
-| `GET`  | `/healthcheck`                  | Health check – returns `OK`                        |
-| `GET`  | `/rest/logical-hardware`        | List all hardware model UUIDs                      |
-| `GET`  | `/rest/logical-hardware/{uuid}` | Fetch a hardware model by UUID                     |
-| `POST` | `/rest/logical-hardware`        | Create a hardware model from a JSON body           |
-| `POST` | `/rest/logical-hardware/upload` | Create a hardware model from an uploaded JSON file |
-
-**List all hardware model IDs**
-
-```bash
-curl http://localhost:8000/rest/logical-hardware
-```
-
-**Fetch a specific hardware model**
-
-```bash
-curl http://localhost:8000/rest/logical-hardware/92f4847b-4df2-4c04-9fbc-18c9228b78ab
-```
-
-**Create a hardware model from a JSON body**
-
-```bash
-curl -X POST http://localhost:8000/rest/logical-hardware \
-     -H "Content-Type: application/json" \
-     -d @path/to/calibration.json
-```
-
-**Upload a hardware model from a file**
-
-```bash
-curl -X POST http://localhost:8000/rest/logical-hardware/upload \
-     -F "file=@path/to/calibration.json;type=application/json"
-```
 
 ______________________________________________________________________
 
@@ -879,3 +682,83 @@ outside of Alembic)
 ```bash
 poetry run alembic stamp head
 ```
+
+______________________________________________________________________
+
+## Known Limitations / Not Implemented
+
+This is a proof-of-concept service. The following are notable omissions that would be required in a
+production-grade version:
+
+### DataLoaders (N+1 query problem)
+
+The GraphQL resolvers fetch related ORM objects via SQLAlchemy eager-loading, but this is done
+naively per-root-object. When fetching multiple calibrations each with many qubits, pulse channels,
+etc., this can produce an **N+1 query pattern**. A real service would use
+[Strawberry DataLoaders](https://strawberry.rocks/docs/guides/dataloaders) (backed by
+[`aiodataloader`](https://github.com/syrusakbary/aiodataloader) or similar) to batch and cache
+database lookups within a single request.
+
+### Authentication & Authorisation
+
+There is no authentication or authorisation. A production service would require at minimum:
+
+- **Authentication** – e.g. OAuth 2.0 / OIDC JWT bearer tokens, API keys, or mutual TLS.
+- **Authorisation** – role-based or attribute-based access control to restrict which clients can
+  read or write which hardware models.
+
+### GraphQL Mutations
+
+The GraphQL API is currently read-only. A real service would expose **mutations** for creating,
+updating, and deleting hardware models, with appropriate input validation mirroring what the REST
+`POST` endpoint does today.
+
+### Input Validation on the GraphQL Layer
+
+Pydantic validation is only applied on the REST path. GraphQL mutations (once added) should perform
+equivalent validation. Strawberry supports Pydantic integration via
+`strawberry.experimental.pydantic` that could be used to share the schema definitions.
+
+### Async Database Access
+
+The application uses a synchronous SQLAlchemy session (`SessionLocal`). FastAPI automatically runs
+synchronous dependencies in a thread pool, but this still blocks a worker thread per request. A
+production service under concurrent load should use SQLAlchemy's async engine (`create_async_engine`
+\+ `AsyncSession`) together with an async-compatible driver (e.g. `aiosqlite` for SQLite, `asyncpg`
+for PostgreSQL) to avoid blocking the event loop.
+
+### Caching
+
+Frequently-read calibration models are re-fetched from the database on every request. A caching
+layer (e.g. Redis with an appropriate TTL, or an in-process LRU cache invalidated on write) would
+dramatically reduce database load for read-heavy workloads.
+
+### Observability
+
+There is no structured logging, metrics, or distributed tracing. A production service should emit:
+
+- **Structured logs** (e.g. via `structlog`) including request IDs for correlation.
+- **Metrics** (e.g. Prometheus counters/histograms via `prometheus-fastapi-instrumentator`).
+- **Traces** (e.g. OpenTelemetry spans covering HTTP requests and database queries).
+
+### Database Connection Pooling & Configuration
+
+The current SQLite default is not suitable for production. When switching to PostgreSQL or another
+server-side database, connection pool settings (`pool_size`, `max_overflow`, `pool_timeout`) should
+be tuned and exposed via configuration, and a connection health-check (`pool_pre_ping=True`) should
+be enabled.
+
+### REST API Versioning
+
+The REST endpoints have no version prefix (e.g. `/v1/rest/…`). A stable public API should be
+versioned from the start to allow breaking changes to be introduced without disrupting existing
+clients.
+
+### Error Handling
+
+Unhandled exceptions propagate as generic 500 responses with minimal detail. A real service would
+map domain errors (e.g. "model not found", "validation failed", "database constraint violated") to
+well-structured error responses with appropriate HTTP status codes, and equivalent
+[GraphQL error extensions](https://strawberry.rocks/docs/guides/errors) for the GraphQL path.
+
+______________________________________________________________________
