@@ -33,7 +33,7 @@ def main():
     junit_files = sorted(report_dir.glob("junit-*.xml"))
     for junit in junit_files:
         pyver = junit.stem.split("-")[-1]
-        print(f"# {pyver} Coverage\n")
+        print(f"# Code Coverage (Python-{pyver})\n")
         # print("## Coverage \n")
         cov_xml = report_dir / f"coverage-{pyver}.xml"
         if cov_xml.exists():
