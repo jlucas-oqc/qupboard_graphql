@@ -55,3 +55,9 @@ jobs:
           poetry run python scripts/coverage_summary.py > summary.md
           cat summary.md >> "$GITHUB_STEP_SUMMARY"
         if: always()
+      - name: Post coverage summary as PR comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-file: summary.md
+        if: github.event_name == 'pull_request'
