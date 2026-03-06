@@ -1,0 +1,119 @@
+name: Main Per-Commit Actions
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  test:
+    name: Test suite (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+      - uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: venv-${{ runner.os }}-py${{ matrix.python-version }}-
+      - name: Install dependencies
+        run: poetry install --with dev
+      - name: Run tests with coverage
+        run: |
+          poetry run pytest \
+            --tb=short \
+            --junitxml=reports/junit-${{ matrix.python-version }}.xml \
+            --cov=src/qupboard_graphql \
+            --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml \
+            --cov-report=term-missing
+      - name: Upload JUnit XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.python-version }}
+          path: reports/junit-${{ matrix.python-version }}.xml
+      - name: Upload coverage XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: reports/coverage-${{ matrix.python-version }}.xml
+
+  build-badges:
+    name: Generate and publish badges
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+      - name: Install dependencies
+        run: poetry install --with dev
+      - name: Generate test-results badge
+        run: |
+          poetry run genbadge tests \
+            -i reports/junit-3.12.xml \
+            -o reports/badges/tests.svg
+        if: always()
+      - name: Generate coverage badge
+        run: |
+          poetry run genbadge coverage \
+            -i reports/coverage-3.12.xml \
+            -o reports/badges/coverage.svg
+        if: always()
+      - name: Publish badges to the gh-pages branch
+        run: |
+          mkdir -p gh-pages/badges
+          cp reports/badges/tests.svg    gh-pages/badges/tests.svg
+          cp reports/badges/coverage.svg gh-pages/badges/coverage.svg
+          cd gh-pages
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+          git add badges/
+          if git diff --cached --quiet; then
+            echo "No badge changes to commit."
+          else
+            git commit -m "chore: update CI badges [skip ci]"
+            git push origin gh-pages
+          fi
+
+  build-and-publish-docs:
+    name: Build and publish documentation
+    runs-on: ubuntu-latest
+    needs: build-badges
+    if: always()
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install dependencies
+        run: pip install mkdocs mkdocs-material
+      - name: Build documentation
+        run: mkdocs build
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: site
