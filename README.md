@@ -563,6 +563,12 @@ coupling to the others:
 - **DB Engine** – the actual database engine (SQLite by default, but configurable via
   `DATABASE_URL`).
 
+Below is a high-level architecture diagram showing how these layers interact for both REST and
+GraphQL. In this PoC we provide Pydantic models and manual mappers to demonstrate how a REST API can
+be decoupled from the database schema (and indeed The REST endpoints are used to import real,
+legacyQat-format calibration files), while the GraphQL API maps directly from the ORM models via
+`strawberry-sqlalchemy-mapper`, tracking the database schema without a separate translation layer.
+
 ```mermaid
 flowchart TD
     Client(["HTTP Client"])
