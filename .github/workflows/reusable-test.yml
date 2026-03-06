@@ -41,25 +41,25 @@ jobs:
         run: |
           poetry run pytest \
             --tb=short \
-            --junitxml=reports/junit.xml \
+            --junitxml=reports/junit-${{ inputs.python-version }}.xml \
             --cov=src/qupboard_graphql \
             --cov-report=term-missing \
-            --cov-report=xml:reports/coverage.xml \
-            --cov-report=html:reports/htmlcov
+            --cov-report=xml:reports/coverage-${{ inputs.python-version }}.xml \
+            --cov-report=html:reports/htmlcov-${{ inputs.python-version }}
 
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: test-results
-          path: reports/junit.xml
+          name: test-results-py${{ inputs.python-version }}
+          path: reports/junit-${{ inputs.python-version }}.xml
           retention-days: 30
 
       - name: Upload coverage report
         uses: actions/upload-artifact@v4
         with:
-          name: coverage-report
+          name: coverage-report-py${{ inputs.python-version }}
           path: |
-            reports/coverage.xml
-            reports/htmlcov/
+            reports/coverage-${{ inputs.python-version }}.xml
+            reports/htmlcov-${{ inputs.python-version }}/
           retention-days: 30
