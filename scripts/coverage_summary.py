@@ -34,16 +34,18 @@ def main():
     for junit in junit_files:
         pyver = junit.stem.split("-")[-1]
         print(f"# Test Summary for {pyver}\n")
-        summary = parse_junit(junit)
-        print(f"**Tests:** {summary['tests']}  ")
-        print(f"**Failures:** {summary['failures']}  ")
-        print(f"**Errors:** {summary['errors']}  ")
-        print(f"**Skipped:** {summary['skipped']}\n")
+        print("## Coverage \n")
         cov_xml = report_dir / f"coverage-{pyver}.xml"
         if cov_xml.exists():
             print(pycobertura_markdown(cov_xml))
         else:
             print("No coverage report found.\n")
+        print("## Test results \n")
+        summary = parse_junit(junit)
+        print(f"**Tests:** {summary['tests']}  ")
+        print(f"**Failures:** {summary['failures']}  ")
+        print(f"**Errors:** {summary['errors']}  ")
+        print(f"**Skipped:** {summary['skipped']}\n")
 
 
 if __name__ == "__main__":
