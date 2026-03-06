@@ -15,6 +15,6 @@ def test_root_redirects_to_docs(app_client):
     assert response.headers["location"] == "/docs"
 
 
-# def test_should_fail():
-#     """This test should fail to confirm that the test suite is running correctly."""
-#     assert False
+def test_should_fail():
+    """This test should fail to confirm that the test suite is running correctly."""
+    assert False
