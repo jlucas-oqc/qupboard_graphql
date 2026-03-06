@@ -8,12 +8,19 @@ FastAPI-compatible generator dependency that yields a per-request
 
 from typing import Any, Generator
 
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.engine.url import make_url
 from sqlalchemy.orm import Session, sessionmaker
 
 from qupboard_graphql.config import settings
+
+
+def _set_sqlite_pragma(dbapi_connection: Any, _connection_record: Any) -> None:
+    """Enable SQLite foreign key enforcement for each DB-API connection."""
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 
 def get_engine(database_url: str | None = None) -> Engine:
@@ -33,7 +40,13 @@ def get_engine(database_url: str | None = None) -> Engine:
     if url.get_backend_name() == "sqlite":
         connect_args["check_same_thread"] = False
 
-    return create_engine(resolved_url, connect_args=connect_args)
+    engine = create_engine(resolved_url, connect_args=connect_args)
+
+    # Enforce FK constraints in SQLite (off by default unless pragma is set per connection).
+    if url.get_backend_name() == "sqlite":
+        event.listen(engine, "connect", _set_sqlite_pragma)
+
+    return engine
 
 
 engine = get_engine()

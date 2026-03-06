@@ -107,11 +107,14 @@ database setup is required.
 
 For each test function, `tests/conftest.py`:
 
-- creates a fresh SQLite in-memory engine,
+- creates a fresh SQLite in-memory engine (using `StaticPool` so all connections share the same
+  in-memory database),
+- registers the `_set_sqlite_pragma` listener to enforce foreign-key constraints,
 - creates the schema with `Base.metadata.create_all(...)`,
-- temporarily swaps `qupboard_graphql.db.session.engine` to that test engine,
+- temporarily swaps **both** `qupboard_graphql.db.session.engine` and
+  `qupboard_graphql.db.session.session_factory` to point at the test engine,
 - runs requests through the **real** `get_db` dependency (no FastAPI `dependency_overrides`),
-- drops the schema and disposes the engine during teardown.
+- drops the schema and disposes the engine during teardown, restoring the original module globals.
 
 This keeps tests isolated while exercising the same dependency path used in production.
 
@@ -530,7 +533,7 @@ qupboard_graphql/
 │       │   ├── models.py           # ORM models mirroring the hardware model schema
 │       │   ├── mapper_from_orm.py  # ORM → Pydantic conversion helpers
 │       │   ├── mapper_to_orm.py    # Pydantic → ORM conversion helpers
-│       │   └── session.py          # Module-level engine instance and get_db dependency
+│       │   └── session.py          # get_engine() factory, module-level engine/session_factory, and get_db dependency
 │       └── schemas/
 │           └── hardware_model.py   # Pydantic schema for HardwareModel
 └── tests/
@@ -564,34 +567,32 @@ coupling to the others:
 flowchart TD
     Client(["HTTP Client"])
 
-    subgraph api ["api/"]
-        REST["rest.py"]
-        GQL["graphql.py + graphql_types.py"]
+    subgraph fastAPI ["FastAPI app"]
+        subgraph routers ["Endpoint routers"]
+            GQL["graphql.py + graphql_types.py"]
+            REST["rest.py"]
+        end
+        subgraph pydantic ["Pydantic schema / ORM mappers (REST only)"]
+            HM["hardware_model.py<br/>(Pydantic models)"]
+            TO["mapper_to_orm.py<br/>Pydantic → ORM"]
+            FROM["mapper_from_orm.py<br/>ORM → Pydantic"]
+        end
+
+        ORM["(SQLAlchemy ORM)<br/>models.py<br/>repository.py<br/>session.py"]
     end
 
-    subgraph schemas ["schemas/"]
-        HM["hardware_model.py<br/>(Pydantic models)"]
-    end
+    DB[("Database<br/>(SQLite / PostgreSQL / ...)")]
 
-    subgraph db ["db/"]
-        TO["mapper_to_orm.py<br/>Pydantic → ORM"]
-        FROM["mapper_from_orm.py<br/>ORM → Pydantic"]
-        ORM["models.py<br/>(SQLAlchemy ORM)<br/>repository.py · session.py"]
-    end
+    Client <--> REST
+    Client <--> GQL
 
-    DB[("SQLite / PostgreSQL / …")]
-
-    api ~~~ schemas
-    schemas ~~~ db
-    db ~~~ DB
-
-    Client --> REST
-    Client --> GQL
-    REST -->|"writes via"| HM
+    REST <--> HM
     HM --> TO
-    TO --> ORM
-    ORM --> FROM
-    FROM -->|"reads via"| HM
+    TO -->|"write"| ORM
+
+    ORM -->|"read"| FROM
+    FROM --> HM
+
     GQL -->|"reads directly<br/>(strawberry-sqlalchemy-mapper)"| ORM
     ORM <--> DB
 ```
@@ -825,11 +826,6 @@ The current SQLite default is not suitable for production. When switching to Pos
 server-side database, connection pool settings (`pool_size`, `max_overflow`, `pool_timeout`) should
 be tuned and exposed via configuration, and a connection health-check (`pool_pre_ping=True`) should
 be enabled.
-
-Additionally, `session.py` passes `connect_args={"check_same_thread": False}` unconditionally — this
-argument is SQLite-specific and will cause an error with other database drivers. It should be gated
-behind a check on the `DATABASE_URL` scheme, or removed in favour of driver-appropriate
-configuration.
 
 ### REST API Versioning
 

@@ -5,13 +5,14 @@ This module provides two fixture groups:
 - object/data fixtures that load calibration payloads and create test records
 """
 
+from collections.abc import Iterator
 from pathlib import Path
+from typing import Any
 import uuid
-from typing import Iterator
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, event
 from sqlalchemy.engine import Engine
 from sqlalchemy.orm import Session, sessionmaker
 from sqlalchemy.pool import StaticPool
@@ -25,6 +26,13 @@ from qupboard_graphql.schemas.hardware_model import HardwareModel
 data_path: Path = Path(__file__).parent / "data"
 
 _JSON_HEADERS: dict[str, str] = {"Content-Type": "application/json"}
+
+
+def _set_sqlite_pragma(dbapi_connection: Any, _connection_record: Any) -> None:
+    """Enable SQLite foreign key enforcement for each DB-API connection."""
+    cursor = dbapi_connection.cursor()
+    cursor.execute("PRAGMA foreign_keys=ON")
+    cursor.close()
 
 
 # ---------------------------------------------------------------------------
@@ -44,6 +52,7 @@ def db_engine() -> Iterator[Engine]:
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
+    event.listen(engine, "connect", _set_sqlite_pragma)
     Base.metadata.create_all(bind=engine)
 
     original_engine: Engine = session_module.engine
