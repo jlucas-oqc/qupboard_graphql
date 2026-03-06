@@ -43,6 +43,9 @@ filterwarnings = [
 # Allow lines to be as long as 120.
 line-length = 120
 
+[tool.coverage.run]
+omit = ["src/qupboard_graphql/main.py"]
+
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]
 build-backend = "poetry.core.masonry.api"
