@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: ["**"]
+  workflow_call:
+    outputs:
+      coverage-pct:
+        description: "Total line-coverage percentage (integer, 0-100)"
+        value: ${{ jobs.test.outputs.coverage-pct }}
+
+jobs:
+  test:
+    name: Test suite (Python ${{ matrix.python-version }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+
+    outputs:
+      # Only meaningful for the matrix leg that is actually used downstream
+      coverage-pct: ${{ steps.coverage.outputs.pct }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install Poetry
+        uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+
+      - name: Cache virtual environment
+        uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: |
+            venv-${{ runner.os }}-py${{ matrix.python-version }}-
+
+      - name: Install dependencies
+        run: poetry install --with dev
+
+      - name: Run tests with coverage
+        run: |
+          poetry run pytest \
+            --tb=short \
+            --junitxml=reports/junit.xml \
+            --cov=src/qupboard_graphql \
+            --cov-report=term-missing \
+            --cov-report=xml:reports/coverage.xml \
+            --cov-report=html:reports/htmlcov
+
+      - name: Extract coverage percentage
+        id: coverage
+        run: |
+          PCT=$(poetry run python -c "
+          import xml.etree.ElementTree as ET
+          tree = ET.parse('reports/coverage.xml')
+          rate = float(tree.getroot().attrib['line-rate'])
+          print(int(rate * 100))
+          ")
+          echo "pct=$PCT" >> "$GITHUB_OUTPUT"
+          echo "Coverage: $PCT%"
+
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results-py${{ matrix.python-version }}
+          path: reports/junit.xml
+          retention-days: 30
+
+      - name: Upload coverage report
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report-py${{ matrix.python-version }}
+          path: |
+            reports/coverage.xml
+            reports/htmlcov/
+          retention-days: 30
+
+      - name: Publish test results
+        uses: EnricoMi/publish-test-results-action@v2
+        if: always()
+        with:
+          files: reports/junit.xml
+          check_name: "Test Results (Python ${{ matrix.python-version }})"

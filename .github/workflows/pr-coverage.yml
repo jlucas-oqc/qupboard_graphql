@@ -1,0 +1,196 @@
+name: PR Coverage
+
+on:
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  # ── Run tests on the PR branch ─────────────────────────────────────────────
+  test-pr:
+    name: Tests – PR branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+
+      - uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py3.12-${{ hashFiles('poetry.lock') }}
+          restore-keys: venv-${{ runner.os }}-py3.12-
+
+      - name: Install dependencies
+        run: poetry install --with dev
+
+      - name: Run tests (PR branch)
+        run: |
+          poetry run pytest \
+            --tb=short \
+            --junitxml=reports/junit.xml \
+            --cov=src/qupboard_graphql \
+            --cov-report=xml:reports/coverage.xml \
+            --cov-report=term-missing
+
+      - name: Upload PR coverage XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-coverage-xml
+          path: reports/coverage.xml
+
+      - name: Upload PR JUnit report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr-junit
+          path: reports/junit.xml
+
+      - name: Publish test results check
+        uses: EnricoMi/publish-test-results-action@v2
+        if: always()
+        with:
+          files: reports/junit.xml
+          check_name: "Test Results (PR)"
+          comment_mode: always
+
+  # ── Run tests on the base branch ───────────────────────────────────────────
+  test-base:
+    name: Tests – base branch
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.base_ref }}
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+
+      - uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-base-${{ runner.os }}-py3.12-${{ hashFiles('poetry.lock') }}
+          restore-keys: venv-base-${{ runner.os }}-py3.12-
+
+      - name: Install dependencies
+        run: poetry install --with dev
+
+      - name: Run tests (base branch)
+        run: |
+          poetry run pytest \
+            --cov=src/qupboard_graphql \
+            --cov-report=xml:reports/coverage-base.xml
+
+      - name: Upload base coverage XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: base-coverage-xml
+          path: reports/coverage-base.xml
+
+  # ── Post coverage delta comment on the PR ──────────────────────────────────
+  coverage-comment:
+    name: Post coverage delta comment
+    runs-on: ubuntu-latest
+    needs: [test-pr, test-base]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: pr-coverage-xml
+          path: reports/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: base-coverage-xml
+          path: reports/
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install pycobertura
+        run: pip install pycobertura
+
+      - name: Compute coverage delta and post PR comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          # Write a self-contained Python script to a temp file so we avoid
+          # all shell-quoting issues with multi-line strings.
+          cat > /tmp/post_coverage.py << 'PYEOF'
+          import os
+          import subprocess
+          import textwrap
+
+          def run(cmd):
+              result = subprocess.run(cmd, capture_output=True, text=True)
+              return (result.stdout + result.stderr).strip()
+
+          summary = run([
+              "python", "-m", "pycobertura", "show",
+              "reports/coverage.xml", "--format", "text"
+          ])
+
+          diff = run([
+              "python", "-m", "pycobertura", "diff",
+              "reports/coverage-base.xml", "reports/coverage.xml",
+              "--format", "text"
+          ])
+
+          body = textwrap.dedent(f"""\
+          ## 📊 Coverage Report
+
+          <details><summary><strong>Coverage summary (PR branch)</strong></summary>
+
+          ```
+          {summary}
+          ```
+
+          </details>
+
+          <details><summary><strong>Coverage delta vs base branch</strong></summary>
+
+          ```
+          {diff}
+          ```
+
+          </details>
+          """)
+
+          pr   = os.environ["PR_NUMBER"]
+          repo = os.environ["REPO"]
+
+          # Update an existing bot comment if present, otherwise create one.
+          r = subprocess.run(
+              ["gh", "pr", "comment", pr, "--repo", repo,
+               "--body", body, "--edit-last"],
+              capture_output=True
+          )
+          if r.returncode != 0:
+              subprocess.run(
+                  ["gh", "pr", "comment", pr, "--repo", repo, "--body", body],
+                  check=True
+              )
+          PYEOF
+          python /tmp/post_coverage.py
