@@ -88,6 +88,8 @@ jobs:
         uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - name: Install pycobertura
+        run: pip install pycobertura
       - name: Post coverage summary as PR comment
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -95,24 +97,23 @@ jobs:
           REPO: ${{ github.repository }}
         run: |
           python3 <<'EOF'
-          import os, glob, xml.etree.ElementTree as ET, textwrap, subprocess
-
-          def parse_coverage(path):
-              try:
-                  tree = ET.parse(path)
-                  rate = float(tree.getroot().attrib['line-rate'])
-                  return int(rate * 100)
-              except Exception:
-                  return 'N/A'
+          import os, glob, subprocess, textwrap
 
           cov_files = sorted(glob.glob('all-cov/**/coverage-*.xml', recursive=True))
-          summary = '| Python | Coverage % |\n|--------|------------|\n'
+          summary = ''
           for cov in cov_files:
               pyver = cov.split('coverage-')[-1].split('.xml')[0]
-              pct = parse_coverage(cov)
-              summary += f'| {pyver} | {pct} |\n'
+              # Get file-level coverage table using pycobertura
+              try:
+                  result = subprocess.run([
+                      'python', '-m', 'pycobertura', 'show', cov, '--format', 'markdown', '--no-color'
+                  ], capture_output=True, text=True, check=True)
+                  file_table = result.stdout.strip()
+              except Exception as e:
+                  file_table = f'Error generating file-level coverage: {e}'
+              summary += f'### Python {pyver}\n\n{file_table}\n\n'
           body = textwrap.dedent(f"""
-          ## 🛡️ Coverage Summary
+          ## 🛡️ Coverage Summary (File Level)
 
           {summary}
           """)
