@@ -13,113 +13,17 @@ jobs:
   # ── Run tests on the PR branch ─────────────────────────────────────────────
   test-pr:
     name: Tests – PR branch
-    runs-on: ubuntu-latest
-
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-
-      - uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-py3.12-${{ hashFiles('poetry.lock') }}
-          restore-keys: venv-${{ runner.os }}-py3.12-
-
-      - name: Install dependencies
-        run: poetry install --with dev
-
-      - name: Run tests (PR branch)
-        run: |
-          poetry run pytest \
-            --tb=short \
-            --junitxml=reports/junit.xml \
-            --cov=src/qupboard_graphql \
-            --cov-report=xml:reports/coverage.xml \
-            --cov-report=term-missing
-
-      - name: Upload PR coverage XML
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr-coverage-xml
-          path: reports/coverage.xml
-
-      - name: Upload PR JUnit report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: pr-junit
-          path: reports/junit.xml
-
-      - name: Publish test results check
-        if: always()
-        run: |
-          echo "Publishing test results as a GitHub check..."
-          CHECK_NAME="Test Results (PR)"
-          TEST_RESULTS=$(cat reports/junit.xml | sed 's/"/\\"/g')
-          PAYLOAD=$(cat <<EOF
-          {
-            "name": "$CHECK_NAME",
-            "head_sha": "${{ github.sha }}",
-            "status": "completed",
-            "conclusion": "success",
-            "output": {
-              "title": "$CHECK_NAME",
-              "summary": "Test results for PR branch",
-              "text": "\n\n$TEST_RESULTS"
-            }
-          }
-          EOF
-          )
-          curl -X POST -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-               -H "Accept: application/vnd.github.v3+json" \
-               https://api.github.com/repos/${{ github.repository }}/check-runs \
-               -d "$PAYLOAD"
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      python-version: "3.12"
 
   # ── Run tests on the base branch ───────────────────────────────────────────
   test-base:
     name: Tests – base branch
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      python-version: "3.12"
 
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.base_ref }}
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-
-      - uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-base-${{ runner.os }}-py3.12-${{ hashFiles('poetry.lock') }}
-          restore-keys: venv-base-${{ runner.os }}-py3.12-
-
-      - name: Install dependencies
-        run: poetry install --with dev
-
-      - name: Run tests (base branch)
-        run: |
-          poetry run pytest \
-            --cov=src/qupboard_graphql \
-            --cov-report=xml:reports/coverage-base.xml
-
-      - name: Upload base coverage XML
-        uses: actions/upload-artifact@v4
-        with:
-          name: base-coverage-xml
-          path: reports/coverage-base.xml
 
   # ── Post coverage delta comment on the PR ──────────────────────────────────
   coverage-comment:

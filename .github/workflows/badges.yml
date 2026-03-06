@@ -11,42 +11,11 @@ permissions:
 jobs:
   build-badges:
     name: Generate and publish badges
-    runs-on: ubuntu-latest
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      python-version: "3.12"
 
     steps:
-      - uses: actions/checkout@v4
-
-      - uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-
-      - uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-
-      - uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-py3.12-${{ hashFiles('poetry.lock') }}
-          restore-keys: venv-${{ runner.os }}-py3.12-
-
-      - name: Install dependencies (including genbadge)
-        run: |
-          poetry install --with dev
-          poetry run pip install genbadge[all]
-
-      - name: Run tests with coverage
-        # Continue so we can always (re)generate badges, even on failure
-        continue-on-error: true
-        run: |
-          poetry run pytest \
-            --tb=short \
-            --junitxml=reports/junit.xml \
-            --cov=src/qupboard_graphql \
-            --cov-report=xml:reports/coverage.xml \
-            --cov-report=term-missing
-        id: tests
-
       - name: Generate test-results badge
         run: |
           poetry run genbadge tests \
@@ -61,39 +30,11 @@ jobs:
             -o reports/badges/coverage.svg
         if: always()
 
-      # ── Publish badges to the gh-pages branch ─────────────────────────────
-      - name: Checkout gh-pages branch (badges sub-tree)
-        uses: actions/checkout@v4
-        with:
-          ref: gh-pages
-          path: gh-pages
-          # Create the branch if it doesn't exist yet
-          fetch-depth: 0
-        continue-on-error: true
-
-      - name: Initialise gh-pages branch if it doesn't exist
-        run: |
-          if [ ! -d gh-pages ]; then
-            git clone --no-checkout "https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git" gh-pages
-            cd gh-pages
-            git checkout --orphan gh-pages
-            git reset --hard
-            git config user.email "github-actions[bot]@users.noreply.github.com"
-            git config user.name  "github-actions[bot]"
-            echo "# GitHub Pages" > README.md
-            git add README.md
-            git commit -m "chore: initialise gh-pages"
-            git push origin gh-pages
-          fi
-
-      - name: Copy badges into gh-pages working tree
+      - name: Publish badges to the gh-pages branch
         run: |
           mkdir -p gh-pages/badges
           cp reports/badges/tests.svg    gh-pages/badges/tests.svg
           cp reports/badges/coverage.svg gh-pages/badges/coverage.svg
-
-      - name: Commit and push badges
-        run: |
           cd gh-pages
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git config user.name  "github-actions[bot]"
