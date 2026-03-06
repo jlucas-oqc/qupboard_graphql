@@ -12,8 +12,8 @@ both a GraphQL and a REST API. It is built with:
 - **[Pydantic](https://docs.pydantic.dev/)** – request/response validation and serialisation
 
 The default backing store is SQLite (`qupboard.db`), configured via the `DATABASE_URL` environment
-variable, but because we use SQLAlchemy, many other database engines may be used (postgres, MySQL,
-MariaDB etc).
+variable, but because we use SQLAlchemy, many other database engines may be used (PostgreSQL, MySQL,
+MariaDB, etc.).
 
 ______________________________________________________________________
 
@@ -39,16 +39,15 @@ ______________________________________________________________________
 
 ### Installation
 
-Clone the repository and install all dependencies (including dev dependencies) into a local virtual
+After cloning, install all dependencies (including dev dependencies) into a local virtual
 environment:
 
 ```bash
-git clone https://github.com/jlucas-oqc/qubboard_graphql.git
-cd qubboard_graphql
 poetry install --with dev
 ```
 
-> The virtual environment is created in-project at `.venv/` (configured in `poetry.toml`).
+> The virtual environment is created in-project at `.venv/` (configured in `poetry.toml`). Omit
+> `--with dev` for a runtime-only install (no test, lint, or documentation tools).
 
 ### Configuration
 
@@ -93,16 +92,19 @@ installed dependencies into a virtual environment):
 
 The server starts on `http://0.0.0.0:8000`. The following endpoints are then available:
 
-| URL                             | Description                            |
-| ------------------------------- | -------------------------------------- |
-| `http://localhost:8000/graphql` | GraphQL API + interactive GraphiQL IDE |
-| `http://localhost:8000/rest`    | REST API                               |
-| `http://localhost:8000/docs`    | OpenAPI / Swagger UI                   |
+| URL                                 | Description                            |
+| ----------------------------------- | -------------------------------------- |
+| `http://localhost:8000/`            | Redirects to `/docs`                   |
+| `http://localhost:8000/graphql`     | GraphQL API + interactive GraphiQL IDE |
+| `http://localhost:8000/rest`        | REST API                               |
+| `http://localhost:8000/docs`        | OpenAPI / Swagger UI                   |
+| `http://localhost:8000/healthcheck` | Liveness probe – returns `OK`          |
 
 ### Running the tests
 
 The test suite uses [pytest](https://pytest.org/) with an in-memory SQLite database so no prior
-database setup is required.
+database setup is required. Each test runs inside a transaction that is rolled back on completion,
+keeping tests fully isolated without recreating the schema between runs.
 
 Run all tests:
 
@@ -154,11 +156,50 @@ The `site/` directory is excluded from version control via `.gitignore`. The sta
 served by any web server or deployed to any static hosting provider (GitHub Pages, GitLab Pages, S3,
 etc.).
 
+### Code style & pre-commit hooks
+
+The project uses [Ruff](https://docs.astral.sh/ruff/) for linting and formatting, and
+[pre-commit](https://pre-commit.com/) to enforce hygiene checks automatically on every commit. The
+hooks are defined in `.pre-commit-config.yaml` and include:
+
+| Hook                      | Purpose                                                                             |
+| ------------------------- | ----------------------------------------------------------------------------------- |
+| `ruff`                    | Lint and auto-fix Python source files                                               |
+| `ruff-format`             | Format Python source files                                                          |
+| `mdformat`                | Format Markdown files (100-character wrap)                                          |
+| `conventional-pre-commit` | Enforce [Conventional Commits](https://www.conventionalcommits.org/) message format |
+| General file hooks        | Trailing whitespace, YAML/TOML/JSON validity, merge-conflict markers, etc.          |
+
+Install the hooks into your local clone (one-time setup, run after `poetry install`):
+
+```bash
+poetry run pre-commit install --install-hooks
+poetry run pre-commit install --hook-type commit-msg
+```
+
+> The second command is required for the `conventional-pre-commit` hook, which runs at the
+> `commit-msg` stage rather than the default `pre-commit` stage.
+
+To run all hooks manually against the entire codebase:
+
+```bash
+poetry run pre-commit run --all-files
+```
+
+To run only the linter/formatter without committing:
+
+```bash
+poetry run ruff check --fix .
+poetry run ruff format .
+```
+
+______________________________________________________________________
+
 ## Example Queries
 
 ### REST
 
-The REST API is mostly available at `/rest`. Interactive OpenAPI docs are served at `/docs`.
+The REST API is available at `/rest`. Interactive OpenAPI docs are served at `/docs`.
 
 | Method | Path                            | Description                                        |
 | ------ | ------------------------------- | -------------------------------------------------- |
@@ -240,17 +281,17 @@ Pass a UUID returned by `getAllHardwareModelIds` as the `id` argument:
     qubits {
       edges {
         node {
-          uuid
+          id
           qubitKey
           physicalChannel {
-            uuid
+            id
             channelKind
             basebandFrequency
           }
           pulseChannels {
             edges {
               node {
-                uuid
+                id
                 channelRole
                 frequency
                 pulse {
@@ -263,11 +304,11 @@ Pass a UUID returned by `getAllHardwareModelIds` as the `id` argument:
             }
           }
           resonator {
-            uuid
+            id
             pulseChannels {
               edges {
                 node {
-                  uuid
+                  id
                   channelRole
                   frequency
                 }
@@ -300,7 +341,7 @@ generated automatically by `strawberry-sqlalchemy-mapper`. Pass `first` to set t
       edges {
         cursor
         node {
-          uuid
+          id
           qubitKey
         }
       }
@@ -320,7 +361,7 @@ Take `endCursor` from the response and pass it as `after` to fetch the next page
   getCalibration(id: "<uuid>") {
     qubits(first: 5, after: "<endCursor from previous response>") {
       edges {
-        node { uuid qubitKey }
+        node { id qubitKey }
       }
       pageInfo {
         hasNextPage
@@ -578,8 +619,8 @@ ______________________________________________________________________
 
 ### Schema
 
-The database schema mirrors the `HardwareModel` Pydantic schema and is defined as SQLAlchemy ORM
-models in `src/qupboard_graphql/db/models.py`. The table hierarchy is:
+The database schema semi-mirrors the `HardwareModel` Pydantic schema and is defined as SQLAlchemy
+ORM models in `src/qupboard_graphql/db/models.py`. The table hierarchy is:
 
 ```
 hardware_models
@@ -591,7 +632,7 @@ hardware_models
     │     'second_state'     – second-state channel (ss_active, ss_delay)
     │     'freq_shift'       – freq-shift channel   (fs_active, fs_amp, fs_phase)
     │     'reset_qubit'      – qubit reset channel  (reset_delay)
-    │   └── calibratable_pulses (owner_uuid + pulse_role discriminator)
+    │   └── calibratable_pulses (owner_uuid -> pulse_channels.id + pulse_role discriminator)
     ├── cross_resonance_channels (role = 'cr' | 'crc')
     │   └── calibratable_pulses  (pulse_role = 'cr')
     ├── phase_comp_x_pi_2      (inlined column on qubits)
@@ -604,8 +645,23 @@ hardware_models
               'measure'        – resonator measure channel
               'acquire'        – resonator acquire channel (acq_delay/width/sync/use_weights)
               'reset_resonator'– resonator reset channel   (reset_delay)
-            └── calibratable_pulses (owner_uuid + pulse_role discriminator)
+            └── calibratable_pulses (owner_uuid -> pulse_channels.id + pulse_role discriminator)
 ```
+
+Note that although this does store the same information as the `HardwareModel` schema, it is not a
+direct 1:1 mapping — we have made some adjustments. For example, ids are consistently generated as
+UUIDs at the database level (instead of a mix of UUIDs and integer PKs) and named `id`, and some
+fields are inlined for simplicity (e.g. physical channel parameters are stored directly on the
+qubits and resonators instead of separate tables).
+
+This is part of the demonstration to show how legacy schemas can be adapted to fit the needs of a
+particular database engine or query patterns, and how the REST API can be decoupled from the
+database schema via the Pydantic layer and manual mappers.
+
+Exposing the SQLAlchemy models directly in the GraphQL layer via `strawberry-sqlalchemy-mapper` is
+also a deliberate choice to show how the GraphQL API can track the database schema closely without
+needing a separate mapping layer, while the REST API can evolve more independently to keep legacy
+clients happy.
 
 The database URL defaults to `sqlite:///./qupboard.db` and can be overridden with the `DATABASE_URL`
 environment variable.
@@ -622,7 +678,7 @@ across development machines, CI environments, and production deployments require
 [Alembic](https://alembic.sqlalchemy.org/) solves this by treating schema changes as **versioned
 migration scripts** stored alongside the source code. Each migration is a small Python file
 describing how to move the schema forward (`upgrade`) and, optionally, how to reverse that change
-(`downgrade`). Alembic records which migrations have been applied in a `alembic_version` table in
+(`downgrade`). Alembic records which migrations have been applied in an `alembic_version` table in
 the database, so it always knows exactly what state the schema is in and which scripts still need to
 run.
 
@@ -748,6 +804,11 @@ server-side database, connection pool settings (`pool_size`, `max_overflow`, `po
 be tuned and exposed via configuration, and a connection health-check (`pool_pre_ping=True`) should
 be enabled.
 
+Additionally, `session.py` passes `connect_args={"check_same_thread": False}` unconditionally — this
+argument is SQLite-specific and will cause an error with other database drivers. It should be gated
+behind a check on the `DATABASE_URL` scheme, or removed in favour of driver-appropriate
+configuration.
+
 ### REST API Versioning
 
 The REST endpoints have no version prefix (e.g. `/v1/rest/…`). A stable public API should be
@@ -760,5 +821,3 @@ Unhandled exceptions propagate as generic 500 responses with minimal detail. A r
 map domain errors (e.g. "model not found", "validation failed", "database constraint violated") to
 well-structured error responses with appropriate HTTP status codes, and equivalent
 [GraphQL error extensions](https://strawberry.rocks/docs/guides/errors) for the GraphQL path.
-
-______________________________________________________________________
