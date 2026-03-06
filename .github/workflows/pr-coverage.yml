@@ -61,3 +61,8 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body-file: summary.md
         if: github.event_name == 'pull_request'
+      - name: Publish Unit Test Results
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        if: always()
+        with:
+          files: reports/junit-*.xml
