@@ -15,7 +15,8 @@ dependencies = [
     "uvicorn (>=0.41.0,<1.0.0)",
     "pydantic (>=2.0.0,<3.0.0)",
     "pydantic-settings (>=2.13.1,<3.0.0)",
-    "strawberry-sqlalchemy-mapper (>=0.8.0,<0.9.0)"
+    "strawberry-sqlalchemy-mapper (>=0.8.0,<0.9.0)",
+    "pycobertura (>=4.1.0,<5.0.0)"
 ]
 [dependency-groups]
 dev = [
@@ -42,6 +43,9 @@ filterwarnings = [
 [tool.ruff]
 # Allow lines to be as long as 120.
 line-length = 120
+
+[tool.coverage.run]
+omit = ["src/qupboard_graphql/main.py"]
 
 [build-system]
 requires = ["poetry-core>=2.0.0,<3.0.0"]

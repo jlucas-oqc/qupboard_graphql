@@ -1,0 +1,21 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  workflow_call:
+    outputs:
+      coverage-pct:
+        description: "Total line-coverage percentage (integer, 0-100)"
+        value: ${{ jobs.test.outputs.coverage-pct }}
+
+jobs:
+  test:
+    name: Test suite (Python ${{ matrix.python-version }})
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      python-version: ${{ matrix.python-version }}
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]

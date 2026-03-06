@@ -1,0 +1,76 @@
+name: PR Coverage
+
+on:
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: read
+  pull-requests: write
+  checks: write
+
+jobs:
+  test:
+    name: Test suite (matrix)
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+      - uses: snok/install-poetry@v1
+        with:
+          virtualenvs-in-project: true
+      - uses: actions/cache@v4
+        with:
+          path: .venv
+          key: venv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
+          restore-keys: venv-${{ runner.os }}-py${{ matrix.python-version }}-
+      - name: Install dependencies
+        run: poetry install --with dev
+      - name: Run tests with coverage
+        run: |
+          poetry run pytest \
+            --tb=short \
+            --junitxml=reports/junit-${{ matrix.python-version }}.xml \
+            --cov=src/qupboard_graphql \
+            --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml \
+            --cov-report=term-missing
+      - name: Upload JUnit XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: junit-${{ matrix.python-version }}
+          path: reports/junit-${{ matrix.python-version }}.xml
+      - name: Upload coverage XML
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-${{ matrix.python-version }}
+          path: reports/coverage-${{ matrix.python-version }}.xml
+
+  report:
+    name: Aggregate & Report
+    runs-on: ubuntu-latest
+    needs: test
+    if: always()
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download all JUnit XMLs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: junit-*
+          path: all-junit
+      - name: Download all coverage XMLs
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: all-cov
+      - name: Publish test results (all Python versions)
+        uses: EnricoMi/publish-unit-test-result-action@v2
+        with:
+          files: all-junit/**/*.xml
+          check_name: Test Results (matrix)
+          github_token: ${{ secrets.GITHUB_TOKEN }}

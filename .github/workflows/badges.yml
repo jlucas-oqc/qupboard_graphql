@@ -1,0 +1,47 @@
+name: Badges
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-badges:
+    name: Generate and publish badges
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      python-version: "3.12"
+
+    steps:
+      - name: Generate test-results badge
+        run: |
+          poetry run genbadge tests \
+            -i reports/junit.xml \
+            -o reports/badges/tests.svg
+        if: always()
+
+      - name: Generate coverage badge
+        run: |
+          poetry run genbadge coverage \
+            -i reports/coverage.xml \
+            -o reports/badges/coverage.svg
+        if: always()
+
+      - name: Publish badges to the gh-pages branch
+        run: |
+          mkdir -p gh-pages/badges
+          cp reports/badges/tests.svg    gh-pages/badges/tests.svg
+          cp reports/badges/coverage.svg gh-pages/badges/coverage.svg
+          cd gh-pages
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+          git add badges/
+          if git diff --cached --quiet; then
+            echo "No badge changes to commit."
+          else
+            git commit -m "chore: update CI badges [skip ci]"
+            git push origin gh-pages
+          fi
