@@ -73,10 +73,57 @@ jobs:
           files: all-junit/**/*.xml
           check_name: Test Results (matrix)
           github_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Upload coverage to Codecov (all Python versions)
-        uses: codecov/codecov-action@v3
+
+  coverage-summary:
+    name: Coverage Summary PR Comment
+    runs-on: ubuntu-latest
+    needs: test
+    steps:
+      - name: Download all coverage XMLs
+        uses: actions/download-artifact@v4
         with:
-          files: all-cov/**/*.xml
-          flags: matrix
-          name: Coverage Report (matrix)
-          fail_ci_if_error: true
+          pattern: coverage-*
+          path: all-cov
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Post coverage summary as PR comment
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+          REPO: ${{ github.repository }}
+        run: |
+          python3 <<'EOF'
+          import os, glob, xml.etree.ElementTree as ET, textwrap, subprocess
+
+          def parse_coverage(path):
+              try:
+                  tree = ET.parse(path)
+                  rate = float(tree.getroot().attrib['line-rate'])
+                  return int(rate * 100)
+              except Exception:
+                  return 'N/A'
+
+          cov_files = sorted(glob.glob('all-cov/**/coverage-*.xml', recursive=True))
+          summary = '| Python | Coverage % |\n|--------|------------|\n'
+          for cov in cov_files:
+              pyver = cov.split('coverage-')[-1].split('.xml')[0]
+              pct = parse_coverage(cov)
+              summary += f'| {pyver} | {pct} |\n'
+          body = textwrap.dedent(f"""
+          ## 🛡️ Coverage Summary
+
+          {summary}
+          """)
+          pr   = os.environ["PR_NUMBER"]
+          repo = os.environ["REPO"]
+          r = subprocess.run([
+              "gh", "pr", "comment", pr, "--repo", repo,
+              "--body", body, "--edit-last"
+          ], capture_output=True)
+          if r.returncode != 0:
+              subprocess.run([
+                  "gh", "pr", "comment", pr, "--repo", repo, "--body", body
+              ], check=True)
+          EOF
