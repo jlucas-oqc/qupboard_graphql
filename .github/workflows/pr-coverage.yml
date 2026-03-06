@@ -52,6 +52,6 @@ jobs:
           path: reports/coverage-${{ matrix.python-version }}.xml
       - name: Generate PR summary (tests & coverage)
         run: |
-          python scripts/coverage_summary.py > summary.md
+          poetry run scripts/coverage_summary.py > summary.md
           cat summary.md >> "$GITHUB_STEP_SUMMARY"
         if: always()
