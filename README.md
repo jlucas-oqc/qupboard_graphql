@@ -784,14 +784,18 @@ ______________________________________________________________________
 This is a proof-of-concept service. The following are notable omissions that would be required in a
 production-grade version:
 
-### DataLoaders (N+1 query problem)
+### N+1 queries on the REST path
 
-The GraphQL resolvers fetch related ORM objects via SQLAlchemy eager-loading, but this is done
-naively per-root-object. When fetching multiple calibrations each with many qubits, pulse channels,
-etc., this can produce an **N+1 query pattern**. A real service would use
-[Strawberry DataLoaders](https://strawberry.rocks/docs/guides/dataloaders) (backed by the built-in
-[`strawberry.dataloader`](https://strawberry.rocks/docs/guides/dataloaders)) to batch and cache
-database lookups within a single request.
+The GraphQL API resolves relationships via `strawberry-sqlalchemy-mapper`'s built-in
+`StrawberrySQLAlchemyLoader`, which is a DataLoader — it batches all relationship loads for a given
+field across the whole result set into a single `SELECT … WHERE fk IN (…)` query per level. The
+GraphQL path has no N+1 problem.
+
+The REST `GET /rest/logical-hardware/{uuid}` endpoint, however, loads a single hardware model and
+passes it to `mapper_from_orm`, which traverses the full relationship tree synchronously. The
+current eager-loading strategy (`lazy="subquery"` on the CR channel relationships) avoids the worst
+cases but is not optimal. A production service should use explicit `selectinload` chains on the
+`get_by_uuid` query or set `lazy="selectin"` on all relationships traversed by the REST mapper.
 
 ### Authentication & Authorisation
 
@@ -815,11 +819,40 @@ equivalent validation. Strawberry supports Pydantic integration via
 
 ### Async Database Access
 
-The application uses a synchronous SQLAlchemy session (created per-request inside `get_db`). FastAPI
-automatically runs synchronous dependencies in a thread pool, but this still blocks a worker thread
-per request. A production service under concurrent load should use SQLAlchemy's async engine
-(`create_async_engine` + `AsyncSession`) together with an async-compatible driver (e.g. `aiosqlite`
-for SQLite, `asyncpg` for PostgreSQL) to avoid blocking the event loop.
+The application uses a synchronous SQLAlchemy session. FastAPI runs synchronous dependencies in a
+thread pool, but this still blocks a worker thread per request under concurrent load. A production
+service should use SQLAlchemy's async engine and `AsyncSession` throughout.
+
+The conversion has been validated end-to-end on this codebase — all 22 tests pass with the async
+stack — and is straightforward. Only 6 source files and 2 test files change; the ORM model
+structure, Pydantic↔ORM mappers, Strawberry type definitions, app factory, and Alembic are all
+untouched. The key steps are:
+
+- Add an async-compatible database driver (`aiosqlite` for SQLite, `asyncpg` for PostgreSQL) and
+  update the `DATABASE_URL` scheme to match.
+- Replace the synchronous engine, session factory, and `get_db` dependency with their async
+  equivalents. Note that the SQLite foreign-key pragma listener must be attached to the underlying
+  sync engine, not the async wrapper.
+- Update the repository methods to use SQLAlchemy 2.0-style `select()` queries (the legacy
+  `session.query()` API is not supported on async sessions). Add an optional eager-load parameter to
+  `get_by_uuid` so callers can request relationship loading without a separate method.
+- In the REST layer, await all database calls and pass an explicit eager-load chain for the full
+  qubit relationship tree when fetching by UUID — `mapper_from_orm` traverses those relationships
+  synchronously on the objects it receives, so they must already be loaded before the session
+  closes.
+- In the GraphQL layer, make all resolvers async. `strawberry-sqlalchemy-mapper` v0.8+ supports
+  async sessions natively and requires no changes to the type definitions. The loader must be
+  configured to reuse the request-scoped session rather than open new ones — if it opens fresh
+  sessions, the DataLoader queries hit a different connection, which breaks in-memory test databases
+  and bypasses the request transaction.
+- Audit all ORM relationship declarations for async-unsafe lazy-loading strategies. `subquery`
+  loading is not async-safe and must be replaced. Any relationship traversed by `mapper_from_orm`
+  must be eagerly loaded, either via the relationship declaration or the explicit load chain above.
+  Take care not to eagerly load the top-level `qubits` collection on `HardwareModelORM` — doing so
+  causes the DataLoader to bypass its pagination logic, silently breaking cursor pagination on that
+  field.
+- Update test fixtures to use the async engine and session equivalents. Tests that interact with the
+  app only via `TestClient` need no changes — `TestClient` handles async apps transparently.
 
 ### Caching
 
