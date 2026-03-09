@@ -23,8 +23,8 @@ jobs:
     with:
       python-version: ${{ matrix.python-version }}
 
-  post-report:
-    name: Post-test reporting (Python ${{ matrix.python-version }})
+  coverage-report:
+    name: Coverage report (Python ${{ matrix.python-version }})
     runs-on: ubuntu-latest
     needs: test-run
     if: always()
@@ -77,8 +77,26 @@ jobs:
           issue-number: ${{ github.event.pull_request.number }}
           body-file: summary.md
         if: github.event_name == 'pull_request'
+
+  publish-unit-test-results:
+    name: Publish Unit Test Results
+    runs-on: ubuntu-latest
+    needs: test-run
+    if: always()
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Download JUnit artifacts (3.12)
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-3.12
+          path: reports
+      - name: Download JUnit artifacts (3.13)
+        uses: actions/download-artifact@v4
+        with:
+          name: junit-3.13
+          path: reports
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
-        if: always()
         with:
           files: reports/junit-*.xml
