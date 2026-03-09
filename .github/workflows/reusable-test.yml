@@ -39,7 +39,7 @@ jobs:
 
       - name: Run tests with coverage
         run: |
-          poetry run pytest \
+          poetry run pytest -n auto \
             --tb=short \
             --junitxml=reports/junit-${{ inputs.python-version }}.xml \
             --cov=src/qupboard_graphql \
