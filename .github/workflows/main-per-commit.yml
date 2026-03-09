@@ -11,39 +11,10 @@ permissions:
 jobs:
   test:
     name: Test suite (Python ${{ matrix.python-version }})
-    runs-on: ubuntu-latest
     strategy:
       fail-fast: false
       matrix:
         python-version: ["3.12", "3.13"]
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-      - uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
-          restore-keys: venv-${{ runner.os }}-py${{ matrix.python-version }}-
-      - name: Install dependencies
-        run: poetry install --with dev
-      - name: Run tests with coverage
-        run: |
-          poetry run pytest \
-            --tb=short \
-            --junitxml=reports/junit-${{ matrix.python-version }}.xml \
-            --cov=src/qupboard_graphql \
-            --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml \
-            --cov-report=term-missing
-      - name: Upload test reports (junit + coverage)
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-reports-${{ matrix.python-version }}
-          path: |
-            reports/junit-${{ matrix.python-version }}.xml
-            reports/coverage-${{ matrix.python-version }}.xml
-        if: always()
+    uses: ./.github/workflows/reusable-test.yml
+    with:
+      python-version: ${{ matrix.python-version }}
