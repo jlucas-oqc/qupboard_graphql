@@ -1,9 +1,5 @@
 # Qupboard GraphQL / REST API
 
-[![CI](https://github.com/jlucas-oqc/qupboard_graphql/actions/workflows/main-per-commit.yml/badge.svg?branch=main)](https://github.com/jlucas-oqc/qupboard_graphql/actions/workflows/main-per-commit.yml)
-[![Tests](https://jlucas-oqc.github.io/qupboard_graphql/badges/tests.svg)](https://github.com/jlucas-oqc/qupboard_graphql/actions/workflows/main-per-commit.yml)
-[![Coverage](https://jlucas-oqc.github.io/qupboard_graphql/badges/coverage.svg)](https://github.com/jlucas-oqc/qupboard_graphql/actions/workflows/main-per-commit.yml)
-
 ## Introduction
 
 Qupboard is a proof-of-concept service for storing and serving **hardware calibration models** via
