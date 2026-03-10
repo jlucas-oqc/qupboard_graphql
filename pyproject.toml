@@ -32,6 +32,7 @@ mkdocstrings = { version = ">=1.0.3,<2.0.0", extras = ["python"] }
 pycobertura = ">=4.1.0,<5.0.0"
 defusedxml = ">=0.7.1,<0.8.0"
 coverage-badge = ">=1.1.2,<2.0.0"
+setuptools = "^82.0.1"
 
 [project.scripts]
 qupboard = "qupboard_graphql.main:main"
