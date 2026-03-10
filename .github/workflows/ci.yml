@@ -37,25 +37,14 @@ jobs:
             --junitxml=reports/junit-${{ matrix.python-version }}.xml \
             --cov=src/qupboard_graphql \
             --cov-report=term-missing \
-            --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml \
-            --cov-report=html:reports/htmlcov-${{ matrix.python-version }}
+            --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml
 
-      - name: Upload test results
+      - name: Upload reports directory
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: junit-${{ matrix.python-version }}
-          path: reports/junit-${{ matrix.python-version }}.xml
-          retention-days: 30
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ matrix.python-version }}
-          path: |
-            reports/coverage-${{ matrix.python-version }}.xml
-            reports/htmlcov-${{ matrix.python-version }}/
+          name: reports-${{ matrix.python-version }}
+          path: reports/
           retention-days: 30
 
   aggregate-and-publish:
@@ -67,37 +56,42 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download all JUnit artifacts
+      - name: Download all reports artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: junit-*
-          path: reports
-          merge-multiple: true
-
-      - name: Download all coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: coverage-*
+          pattern: reports-*
           path: reports
           merge-multiple: true
 
       - name: Setup Python and Poetry
         uses: ./.github/actions/setup-python-poetry
         with:
-          python-version: '3.11'
+          python-version: '3.14'
 
       - name: Generate coverage summary
         run: |
           ls -l reports
-          poetry run python scripts/coverage_summary.py | tee summary.md
+          echo '<!-- coverage-summary -->' > summary.md
+          poetry run python scripts/coverage_summary.py >> summary.md
           cat summary.md >> "$GITHUB_STEP_SUMMARY"
         if: always()
 
-      - name: Post coverage summary as PR comment
-        uses: peter-evans/create-or-update-comment@v4
+      - name: Find coverage summary comment
+        uses: peter-evans/find-comment@v4
+        id: fc
         with:
           issue-number: ${{ github.event.pull_request.number }}
-          body-file: summary.md
+          comment-author: 'github-actions[bot]'
+          body-includes: '<!-- coverage-summary -->'
+        if: github.event_name == 'pull_request'
+
+      - name: Create or update coverage summary comment
+        uses: peter-evans/create-or-update-comment@v4
+        with:
+          comment-id: ${{ steps.fc.outputs.comment-id }}
+          issue-number: ${{ github.event.pull_request.number }}
+          body-path: summary.md
+          edit-mode: replace
         if: github.event_name == 'pull_request'
 
       - name: Publish Unit Test Results
