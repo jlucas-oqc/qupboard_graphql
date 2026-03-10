@@ -14,37 +14,19 @@ permissions:
   checks: write
 
 jobs:
-  # Define the python-version matrix as an anchor
-  _python_matrix: &python_matrix
-    python-version: ["3.11", "3.12", "3.13", "3.14"]
-
   test-run:
     name: Test suite (matrix)
     if: always()
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
-      matrix: *python_matrix
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/setup-python-poetry
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-      - name: Cache virtual environment
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
-          restore-keys: |
-            venv-${{ runner.os }}-py${{ matrix.python-version }}-
-      - name: Install dependencies
-        run: poetry install --with dev
       - name: Run tests with coverage
         run: |
           poetry run pytest -n auto \
@@ -78,32 +60,18 @@ jobs:
     if: always()
     strategy:
       fail-fast: false
-      matrix: *python_matrix
+      matrix:
+        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/setup-python-poetry
+        with:
+          python-version: ${{ matrix.python-version }}
       - name: Download JUnit artifacts
         uses: actions/download-artifact@v4
         with:
           name: junit-${{ matrix.python-version }}
           path: reports
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install Poetry
-        uses: snok/install-poetry@v1
-        with:
-          virtualenvs-in-project: true
-      - name: Cache virtual environment
-        uses: actions/cache@v4
-        with:
-          path: .venv
-          key: venv-${{ runner.os }}-py${{ matrix.python-version }}-${{ hashFiles('poetry.lock') }}
-          restore-keys: |
-            venv-${{ runner.os }}-py${{ matrix.python-version }}-
-      - name: Install dependencies
-        run: poetry install --with dev
       - name: Download coverage artifacts
         uses: actions/download-artifact@v4
         with:
