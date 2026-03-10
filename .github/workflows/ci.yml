@@ -16,7 +16,6 @@ permissions:
 jobs:
   test-run:
     name: Test suite (matrix)
-    if: always()
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -25,10 +24,12 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
       - name: Setup Python and Poetry
         uses: ./.github/actions/setup-python-poetry
         with:
           python-version: ${{ matrix.python-version }}
+
       - name: Run tests with coverage
         run: |
           poetry run pytest -n auto \
@@ -38,6 +39,7 @@ jobs:
             --cov-report=term-missing \
             --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml \
             --cov-report=html:reports/htmlcov-${{ matrix.python-version }}
+
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -45,6 +47,7 @@ jobs:
           name: junit-${{ matrix.python-version }}
           path: reports/junit-${{ matrix.python-version }}.xml
           retention-days: 30
+
       - name: Upload coverage report
         if: always()
         uses: actions/upload-artifact@v4
@@ -55,37 +58,38 @@ jobs:
             reports/htmlcov-${{ matrix.python-version }}/
           retention-days: 30
 
-  coverage-report:
-    name: Coverage report (Python ${{ matrix.python-version }})
+  aggregate-and-publish:
+    name: Aggregate and Publish Results
     runs-on: ubuntu-latest
     needs: test-run
     if: always()
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ["3.11", "3.12", "3.13", "3.14"]
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+
+      - name: Download all JUnit artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: junit-*
+          path: reports
+
+      - name: Download all coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: coverage-*
+          path: reports
+
       - name: Setup Python and Poetry
         uses: ./.github/actions/setup-python-poetry
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Download JUnit artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-${{ matrix.python-version }}
-          path: reports
-      - name: Download coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: coverage-${{ matrix.python-version }}
-          path: reports
+          python-version: '3.11'
+
       - name: Generate summary (tests & coverage)
         run: |
           poetry run python scripts/coverage_summary.py > summary.md
           cat summary.md >> "$GITHUB_STEP_SUMMARY"
         if: always()
+
       - name: Post coverage summary as PR comment
         uses: peter-evans/create-or-update-comment@v4
         with:
@@ -93,34 +97,6 @@ jobs:
           body-file: summary.md
         if: github.event_name == 'pull_request'
 
-  publish-unit-test-results:
-    name: Publish Unit Test Results
-    runs-on: ubuntu-latest
-    needs: test-run
-    if: always()
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Download JUnit artifacts (3.11)
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-3.11
-          path: reports
-      - name: Download JUnit artifacts (3.12)
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-3.12
-          path: reports
-      - name: Download JUnit artifacts (3.13)
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-3.13
-          path: reports
-      - name: Download JUnit artifacts (3.14)
-        uses: actions/download-artifact@v4
-        with:
-          name: junit-3.14
-          path: reports
       - name: Publish Unit Test Results
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
