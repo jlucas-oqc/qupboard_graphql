@@ -1,6 +1,7 @@
 # Qupboard GraphQL / REST API
 
 [![CI Actions](https://github.com/jlucas-oqc/qupboard_graphql/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/jlucas-oqc/qupboard_graphql/actions/workflows/ci.yml)
+[![Coverage](https://raw.githubusercontent.com/jlucas-oqc/qupboard_graphql/main/gh-pages/badges/coverage.svg)](https://github.com/jlucas-oqc/qupboard_graphql)
 
 ## Introduction
 

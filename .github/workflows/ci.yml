@@ -13,6 +13,9 @@ permissions:
   pull-requests: write
   checks: write
 
+env:
+  DEFAULT_PYTHON_VERSION: '3.14'
+
 jobs:
   test-run:
     name: Test suite (matrix)
@@ -66,7 +69,7 @@ jobs:
       - name: Setup Python and Poetry
         uses: ./.github/actions/setup-python-poetry
         with:
-          python-version: '3.14'
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
 
       - name: Generate coverage summary
         run: |
@@ -98,3 +101,37 @@ jobs:
         uses: EnricoMi/publish-unit-test-result-action@v2
         with:
           files: reports/junit-*.xml
+
+  coverage-badge:
+    name: Generate Coverage Badge
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    needs: test-run
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Download a coverage report artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: reports-${{ env.DEFAULT_PYTHON_VERSION }}
+          path: reports
+
+      - name: Setup Python and Poetry
+        uses: ./.github/actions/setup-python-poetry
+        with:
+          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
+
+      - name: Install coverage-badge
+        run: poetry run pip install coverage-badge
+
+      - name: Generate coverage badge
+        run: poetry run coverage-badge -o gh-pages/badges/coverage.svg -f -s reports/coverage-${{ env.DEFAULT_PYTHON_VERSION }}.xml
+
+      - name: Commit and push coverage badge
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add gh-pages/badges/coverage.svg
+          git commit -m "Update coverage badge [skip ci]" || echo "No changes to commit"
+          git push
