@@ -50,6 +50,11 @@ jobs:
           path: reports/
           retention-days: 30
 
+      - name: Generate coverage badge
+        if: matrix.python-version == env.PYTHON_COVERAGE_VERSION
+        run: |
+          poetry run coverage-badge -o reports/coverage-${{ matrix.python-version }}.svg
+
   aggregate-and-publish:
     name: Aggregate and Publish Results
     runs-on: ubuntu-latest
@@ -102,31 +107,11 @@ jobs:
         with:
           files: reports/junit-*.xml
 
-  coverage-badge:
-    name: Generate Coverage Badge
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    needs: test-run
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-
-      - name: Download a coverage report artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: reports-${{ env.DEFAULT_PYTHON_VERSION }}
-          path: reports
-
-      - name: Setup Python and Poetry
-        uses: ./.github/actions/setup-python-poetry
-        with:
-          python-version: ${{ env.DEFAULT_PYTHON_VERSION }}
-
-      - name: Generate coverage badge
-        run: poetry run coverage-badge -o gh-pages/badges/coverage.svg -f -s reports/coverage-${{ env.DEFAULT_PYTHON_VERSION }}.xml
-
       - name: Commit and push coverage badge
+        if: github.ref == 'refs/heads/main'
         run: |
+          mkdir -p gh-pages/badges
+          cp reports/coverage-${{ env.DEFAULT_PYTHON_VERSION }}.svg gh-pages/badges/coverage.svg
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add gh-pages/badges/coverage.svg
