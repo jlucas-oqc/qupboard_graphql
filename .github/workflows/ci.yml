@@ -37,25 +37,14 @@ jobs:
             --junitxml=reports/junit-${{ matrix.python-version }}.xml \
             --cov=src/qupboard_graphql \
             --cov-report=term-missing \
-            --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml \
-            --cov-report=html:reports/htmlcov-${{ matrix.python-version }}
+            --cov-report=xml:reports/coverage-${{ matrix.python-version }}.xml
 
-      - name: Upload test results
+      - name: Upload reports directory
         if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: junit-${{ matrix.python-version }}
-          path: reports/junit-${{ matrix.python-version }}.xml
-          retention-days: 30
-
-      - name: Upload coverage report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: coverage-${{ matrix.python-version }}
-          path: |
-            reports/coverage-${{ matrix.python-version }}.xml
-            reports/htmlcov-${{ matrix.python-version }}/
+          name: reports-${{ matrix.python-version }}
+          path: reports/
           retention-days: 30
 
   aggregate-and-publish:
@@ -67,17 +56,10 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Download all JUnit artifacts
+      - name: Download all reports artifacts
         uses: actions/download-artifact@v4
         with:
-          pattern: junit-*
-          path: reports
-          merge-multiple: true
-
-      - name: Download all coverage artifacts
-        uses: actions/download-artifact@v4
-        with:
-          pattern: coverage-*
+          pattern: reports-*
           path: reports
           merge-multiple: true
 
