@@ -72,19 +72,21 @@ jobs:
         with:
           pattern: junit-*
           path: reports
+          merge-multiple: true
 
       - name: Download all coverage artifacts
         uses: actions/download-artifact@v4
         with:
           pattern: coverage-*
           path: reports
+          merge-multiple: true
 
       - name: Setup Python and Poetry
         uses: ./.github/actions/setup-python-poetry
         with:
           python-version: '3.11'
 
-      - name: Generate summary (tests & coverage)
+      - name: Generate coverage summary
         run: |
           ls -l reports
           poetry run python scripts/coverage_summary.py | tee summary.md
