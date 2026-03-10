@@ -12,9 +12,13 @@ import uuid
 
 import pytest
 from fastapi.testclient import TestClient
-from sqlalchemy import create_engine, event
-from sqlalchemy.engine import Engine
-from sqlalchemy.orm import Session, sessionmaker
+from sqlalchemy.ext.asyncio import (
+    AsyncEngine,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
+from sqlalchemy import event
 from sqlalchemy.pool import StaticPool
 
 from qupboard_graphql.api.app import get_app
@@ -41,82 +45,96 @@ def _set_sqlite_pragma(dbapi_connection: Any, _connection_record: Any) -> None:
 
 
 @pytest.fixture()
-def db_engine() -> Iterator[Engine]:
-    """Create and tear down an isolated in-memory SQLAlchemy engine.
+def db_engine() -> Iterator[AsyncEngine]:
+    """Create and tear down an isolated in-memory SQLAlchemy async engine.
 
     Yields:
-        Engine: A per-test SQLite in-memory engine with all ORM tables created.
+        AsyncEngine: A per-test SQLite in-memory async engine with all ORM tables created.
     """
-    engine: Engine = create_engine(
-        "sqlite://",
+    import asyncio
+
+    engine: AsyncEngine = create_async_engine(
+        "sqlite+aiosqlite://",
         connect_args={"check_same_thread": False},
         poolclass=StaticPool,
     )
-    event.listen(engine, "connect", _set_sqlite_pragma)
-    Base.metadata.create_all(bind=engine)
+    event.listen(engine.sync_engine, "connect", _set_sqlite_pragma)
 
-    original_engine: Engine = session_module.engine
+    async def _setup():
+        async with engine.begin() as conn:
+            await conn.run_sync(Base.metadata.create_all)
+
+    asyncio.run(_setup())
+
+    original_engine: AsyncEngine = session_module.engine
     session_module.engine = engine
     try:
         yield engine
     finally:
         session_module.engine = original_engine
-        Base.metadata.drop_all(bind=engine)
-        engine.dispose()
+
+        async def _teardown():
+            async with engine.begin() as conn:
+                await conn.run_sync(Base.metadata.drop_all)
+            await engine.dispose()
+
+        asyncio.run(_teardown())
 
 
 @pytest.fixture()
-def db_session_factory(db_engine: Engine) -> Iterator[sessionmaker[Session]]:
-    """Build a session factory bound to the test engine and patch app globals.
+def db_session_factory(db_engine: AsyncEngine) -> Iterator[async_sessionmaker[AsyncSession]]:
+    """Build an async session factory bound to the test engine and patch app globals.
 
     Args:
-        db_engine: Per-test SQLAlchemy engine fixture.
+        db_engine: Per-test SQLAlchemy async engine fixture.
 
     Yields:
-        sessionmaker[Session]: Factory that creates sessions bound to ``db_engine``.
+        async_sessionmaker[AsyncSession]: Factory that creates sessions bound to ``db_engine``.
     """
-    session_factory: sessionmaker[Session] = sessionmaker(
+    factory: async_sessionmaker[AsyncSession] = async_sessionmaker(
         bind=db_engine,
         autocommit=False,
         autoflush=False,
+        expire_on_commit=False,
     )
 
-    original_session_factory: sessionmaker[Session] = session_module.session_factory
-    session_module.session_factory = session_factory
+    original_session_factory = session_module.session_factory
+    session_module.session_factory = factory
     try:
-        yield session_factory
+        yield factory
     finally:
         session_module.session_factory = original_session_factory
 
 
 @pytest.fixture()
-def db_session(db_session_factory: sessionmaker[Session]) -> Iterator[Session]:
-    """Provide a SQLAlchemy session bound to the current test engine.
+def db_session(db_session_factory: async_sessionmaker[AsyncSession]) -> Iterator[AsyncSession]:
+    """Provide a SQLAlchemy async session bound to the current test engine.
 
     Args:
-        db_session_factory: Session factory fixture bound to the test DB.
+        db_session_factory: Async session factory fixture bound to the test DB.
 
     Yields:
-        Session: Open SQLAlchemy session for the current test.
+        AsyncSession: Open SQLAlchemy async session for the current test.
     """
-    db: Session = db_session_factory()
+    import asyncio
+
+    session: AsyncSession = db_session_factory()
     try:
-        yield db
+        yield session
     finally:
-        db.close()
+        asyncio.run(session.close())
 
 
 @pytest.fixture()
-def app_client(db_session_factory: sessionmaker[Session]) -> Iterator[TestClient]:
+def app_client(db_session_factory: async_sessionmaker[AsyncSession]) -> Iterator[TestClient]:
     """Create a ``TestClient`` backed by the in-memory test database.
 
     Args:
-        db_session_factory: Session factory fixture used to ensure DB wiring is patched.
+        db_session_factory: Async session factory fixture used to ensure DB wiring is patched.
 
     Yields:
         TestClient: FastAPI test client with server exceptions enabled.
     """
-
     app = get_app()
     with TestClient(app, raise_server_exceptions=True) as client:
         yield client
@@ -152,22 +170,25 @@ def hardware_model(raw_calibration: str) -> HardwareModel:
 
 
 @pytest.fixture()
-def hardware_model_uuid(app_client: TestClient, raw_calibration: str, db_session: Session) -> str:
+def hardware_model_uuid(app_client: TestClient, raw_calibration: str, db_session: AsyncSession) -> str:
     """Create a hardware model via REST and return its UUID.
 
     Args:
         app_client: FastAPI test client fixture.
         raw_calibration: Raw calibration payload fixture.
-        db_session: SQLAlchemy session fixture.
+        db_session: SQLAlchemy async session fixture.
 
     Returns:
         str: UUID of the created hardware model.
     """
+    import asyncio
+
     # Create the model and capture its UUID
     post_response = app_client.post("/rest/logical-hardware", content=raw_calibration, headers=_JSON_HEADERS)
     assert post_response.status_code == 201
     model_uuid = post_response.json()
 
     # Verify the POST wrote the row to the current test database.
-    assert HardwareModelORM.get_by_uuid(db_session, uuid.UUID(model_uuid)) is not None
+    orm_obj = asyncio.run(HardwareModelORM.get_by_uuid(db_session, uuid.UUID(model_uuid)))
+    assert orm_obj is not None
     return model_uuid

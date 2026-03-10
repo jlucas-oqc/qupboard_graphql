@@ -8,8 +8,9 @@ Inherit alongside DeclarativeBase to give ORM models ``get_by_uuid`` and
 from typing import Self
 from uuid import UUID
 
-from sqlalchemy import inspect
-from sqlalchemy.orm import Session
+from sqlalchemy import inspect, select
+from sqlalchemy.orm import Load
+from sqlalchemy.ext.asyncio import AsyncSession
 
 
 class RepositoryMixin:
@@ -22,12 +23,19 @@ class RepositoryMixin:
     """
 
     @classmethod
-    def get_by_uuid(cls, session: Session, uuid: UUID) -> Self | None:
+    async def get_by_uuid(
+        cls,
+        session: AsyncSession,
+        uuid: UUID,
+        load_options: list[Load] | None = None,
+    ) -> Self | None:
         """Return the row whose primary-key column matches *uuid*.
 
         Args:
-            session: An active SQLAlchemy session.
+            session: An active SQLAlchemy async session.
             uuid: The primary-key value to look up.
+            load_options: Optional list of SQLAlchemy loader options (e.g.
+                ``selectinload``) to apply to the query for eager loading.
 
         Returns:
             The matching ORM instance, or ``None`` if no row is found.
@@ -39,14 +47,18 @@ class RepositoryMixin:
         if not pk_cols:
             raise TypeError(f"{cls.__name__} has no primary key defined")
         pk_col = pk_cols[0]
-        return session.query(cls).filter(pk_col == uuid).one_or_none()
+        stmt = select(cls).where(pk_col == uuid)
+        if load_options:
+            stmt = stmt.options(*load_options)
+        result = await session.execute(stmt)
+        return result.scalars().one_or_none()
 
     @classmethod
-    def get_all_pks(cls, session: Session) -> list:
+    async def get_all_pks(cls, session: AsyncSession) -> list:
         """Return a list of all primary key values for this model's table.
 
         Args:
-            session: An active SQLAlchemy session.
+            session: An active SQLAlchemy async session.
 
         Returns:
             A list containing every primary key value in the table, in
@@ -59,4 +71,5 @@ class RepositoryMixin:
         if not pk_cols:
             raise TypeError(f"{cls.__name__} has no primary key defined")
         pk_col = pk_cols[0]
-        return [row[0] for row in session.query(pk_col).all()]
+        result = await session.execute(select(pk_col))
+        return list(result.scalars().all())

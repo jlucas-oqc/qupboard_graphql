@@ -9,11 +9,12 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, UploadFile
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import Session
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from qupboard_graphql.db.mapper_from_orm import hardware_model_from_orm
 from qupboard_graphql.db.mapper_to_orm import hardware_model_to_orm
-from qupboard_graphql.db.models import HardwareModelORM
+from qupboard_graphql.db.models import HardwareModelORM, QubitORM, ResonatorORM
 from qupboard_graphql.db.session import get_db
 from qupboard_graphql.schemas.hardware_model import HardwareModel
 
@@ -27,17 +28,17 @@ rest_router = APIRouter(tags=["Hardware Models"])
     response_description="A list of UUIDs for every stored hardware model",
 )
 async def get_all_logical_hardware_ids(
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> list[UUID]:
     """Return the UUIDs of all hardware models currently stored in the database.
 
     Args:
-        db: An active SQLAlchemy session injected by :func:`~qupboard_graphql.db.session.get_db`.
+        db: An active SQLAlchemy async session injected by :func:`~qupboard_graphql.db.session.get_db`.
 
     Returns:
         A list of UUIDs, one per stored hardware model.
     """
-    return HardwareModelORM.get_all_pks(db)
+    return await HardwareModelORM.get_all_pks(db)
 
 
 @rest_router.get(
@@ -48,13 +49,13 @@ async def get_all_logical_hardware_ids(
 )
 async def get_logical_hardware(
     uuid: UUID,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> HardwareModel:
     """Retrieve a single hardware model by its UUID.
 
     Args:
         uuid: UUID of the hardware model to retrieve.
-        db: An active SQLAlchemy session injected by :func:`~qupboard_graphql.db.session.get_db`.
+        db: An active SQLAlchemy async session injected by :func:`~qupboard_graphql.db.session.get_db`.
 
     Returns:
         The :class:`~qupboard_graphql.schemas.hardware_model.HardwareModel` matching *uuid*.
@@ -62,7 +63,23 @@ async def get_logical_hardware(
     Raises:
         HTTPException: 404 if no hardware model with the given UUID exists.
     """
-    orm_obj = HardwareModelORM.get_by_uuid(db, uuid)
+    orm_obj = await HardwareModelORM.get_by_uuid(
+        db,
+        uuid,
+        load_options=[
+            selectinload(HardwareModelORM.qubits).selectinload(QubitORM.physical_channel),
+            selectinload(HardwareModelORM.qubits).selectinload(QubitORM.pulse_channels),
+            selectinload(HardwareModelORM.qubits)
+            .selectinload(QubitORM.resonator)
+            .selectinload(ResonatorORM.physical_channel),
+            selectinload(HardwareModelORM.qubits)
+            .selectinload(QubitORM.resonator)
+            .selectinload(ResonatorORM.pulse_channels),
+            selectinload(HardwareModelORM.qubits).selectinload(QubitORM.cross_resonance_channels),
+            selectinload(HardwareModelORM.qubits).selectinload(QubitORM.cross_resonance_cancellation_channels),
+            selectinload(HardwareModelORM.qubits).selectinload(QubitORM.zx_pi_4_comps),
+        ],
+    )
     if orm_obj is None:
         raise HTTPException(status_code=404, detail=f"HardwareModel {uuid} not found")
     return hardware_model_from_orm(orm_obj)
@@ -81,14 +98,14 @@ async def get_logical_hardware(
 )
 async def create_logical_hardware(
     model: HardwareModel,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> UUID:
     """Persist a new hardware model supplied as a JSON body.
 
     Args:
         model: A validated :class:`~qupboard_graphql.schemas.hardware_model.HardwareModel`
             instance parsed from the request body.
-        db: An active SQLAlchemy session injected by :func:`~qupboard_graphql.db.session.get_db`.
+        db: An active SQLAlchemy async session injected by :func:`~qupboard_graphql.db.session.get_db`.
 
     Returns:
         The UUID assigned to the newly created hardware model record.
@@ -100,9 +117,9 @@ async def create_logical_hardware(
     orm_obj = hardware_model_to_orm(model)
     db.add(orm_obj)
     try:
-        db.commit()
+        await db.commit()
     except IntegrityError:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(
             status_code=409,
             detail="A hardware model with the same unique identifier already exists.",
@@ -123,14 +140,14 @@ async def create_logical_hardware(
 )
 async def upload_logical_hardware(
     file: UploadFile,
-    db: Session = Depends(get_db),
+    db: AsyncSession = Depends(get_db),
 ) -> UUID:
     """Upload a JSON file containing a hardware model and persist it.
 
     Args:
         file: A JSON file whose content conforms to the
             :class:`~qupboard_graphql.schemas.hardware_model.HardwareModel` schema.
-        db: An active SQLAlchemy session injected by :func:`~qupboard_graphql.db.session.get_db`.
+        db: An active SQLAlchemy async session injected by :func:`~qupboard_graphql.db.session.get_db`.
 
     Returns:
         The UUID assigned to the newly created hardware model record.
@@ -156,9 +173,9 @@ async def upload_logical_hardware(
     orm_obj = hardware_model_to_orm(model)
     db.add(orm_obj)
     try:
-        db.commit()
+        await db.commit()
     except IntegrityError:
-        db.rollback()
+        await db.rollback()
         raise HTTPException(
             status_code=409,
             detail="A hardware model with the same unique identifier already exists.",
