@@ -1,0 +1,4202 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="FastAPI service exposing quantum hardware model calibration data via REST and GraphQL">
+      
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../../config/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Hardware Model - qupboard-graphql</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#hardware-model-schema" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="qupboard-graphql" class="md-header__button md-logo" aria-label="qupboard-graphql" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            qupboard-graphql
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Hardware Model
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/oqc/qupboard-graphql" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    oqc/qupboard-graphql
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../db/" class="md-tabs__link">
+          
+  
+  
+  Database
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Schemas
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../config/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Configuration
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="qupboard-graphql" class="md-nav__button md-logo" aria-label="qupboard-graphql" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    qupboard-graphql
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/oqc/qupboard-graphql" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    oqc/qupboard-graphql
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/rest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/graphql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GraphQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/graphql_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GraphQL Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/root/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Root & Health
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Database
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../db/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../db/models/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../db/repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../db/session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../db/mapper_to_orm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydantic → ORM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../db/mapper_from_orm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ORM → Pydantic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Schemas
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Model
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hardware_model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="hardware_model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.Component" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.BaseBand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BaseBand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.IQVoltageBias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IQVoltageBias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.PhysicalChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PhysicalChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CalibratablePulse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.PulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.DrivePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DrivePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QubitPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.SecondStatePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SecondStatePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.FreqShiftPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FreqShiftPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.CrossResonancePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CrossResonancePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.CrossResonanceCancellationPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CrossResonanceCancellationPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.ResetPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResetPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QubitPulseChannels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.ResonatorPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResonatorPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.MeasurePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MeasurePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.CalibratableAcquire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CalibratableAcquire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.AcquirePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AcquirePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.MeasureAcquirePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MeasureAcquirePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.ResonatorPulseChannels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResonatorPulseChannels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.Resonator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resonator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.XPi2Comp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XPi2Comp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.ZxPi4Comp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZxPi4Comp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.Qubit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qubit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.HardwareModel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HardwareModel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        hardware_model
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="hardware_model">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.Component" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Component
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.BaseBand" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        BaseBand
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.IQVoltageBias" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        IQVoltageBias
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.PhysicalChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PhysicalChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CalibratablePulse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.PulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.DrivePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        DrivePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QubitPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.SecondStatePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        SecondStatePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.FreqShiftPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        FreqShiftPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.CrossResonancePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CrossResonancePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.CrossResonanceCancellationPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CrossResonanceCancellationPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.ResetPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResetPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QubitPulseChannels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.ResonatorPulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResonatorPulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.MeasurePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MeasurePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.CalibratableAcquire" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CalibratableAcquire
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.AcquirePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        AcquirePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.MeasureAcquirePulseChannel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        MeasureAcquirePulseChannel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.ResonatorPulseChannels" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResonatorPulseChannels
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.Resonator" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Resonator
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.XPi2Comp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        XPi2Comp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.ZxPi4Comp" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZxPi4Comp
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.Qubit" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Qubit
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.schemas.hardware_model.HardwareModel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HardwareModel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="hardware-model-schema">Hardware Model Schema<a class="headerlink" href="#hardware-model-schema" title="Permanent link">&para;</a></h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="qupboard_graphql.schemas.hardware_model" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>qupboard_graphql.schemas.hardware_model</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+        <p>Pydantic schema hierarchy for a quantum hardware model calibration record.</p>
+<p>These schemas are used for request/response validation in the REST API and
+as the source of truth for the ORM mapping layer.  The top-level entry point
+is :class:<code>HardwareModel</code>.</p>
+<p>Class hierarchy overview::</p>
+<div class="highlight"><pre><span></span><code>HardwareModel
+ └─ qubits: dict[str, Qubit]
+       ├─ physical_channel: PhysicalChannel
+       │    ├─ baseband: BaseBand
+       │    └─ iq_voltage_bias: IQVoltageBias
+       ├─ pulse_channels: QubitPulseChannels
+       │    ├─ drive: DrivePulseChannel
+       │    ├─ second_state: SecondStatePulseChannel
+       │    ├─ freq_shift: FreqShiftPulseChannel
+       │    ├─ reset: ResetPulseChannel
+       │    ├─ cross_resonance_channels: dict[int, CrossResonancePulseChannel]
+       │    └─ cross_resonance_cancellation_channels: dict[int, ...]
+       ├─ resonator: Resonator
+       │    ├─ physical_channel: PhysicalChannel
+       │    └─ pulse_channels: ResonatorPulseChannels
+       │         ├─ measure: MeasurePulseChannel
+       │         ├─ acquire: AcquirePulseChannel
+       │         └─ reset: ResetPulseChannel
+       ├─ x_pi_2_comp: XPi2Comp
+       └─ zx_pi_4_comp: dict[int, ZxPi4Comp]
+</code></pre></div>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.Component" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Component</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.Component" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>Base class for schema objects that carry a UUID identifier.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Component.uuid">uuid</span></code></td>
+            <td>
+                  <code><span title="uuid.UUID">UUID</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Unique identifier for this component.  Auto-generated when not
+supplied, so calibration files without UUIDs are accepted.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.BaseBand" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>BaseBand</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.BaseBand" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            Component (qupboard_graphql.schemas.hardware_model.Component)" href="#qupboard_graphql.schemas.hardware_model.Component">Component</a></code></p>
+
+
+
+        <p>Baseband oscillator parameters for a physical channel.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.BaseBand.uuid">uuid</span></code></td>
+            <td>
+                  <code><span title="uuid.UUID">UUID</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Unique identifier inherited from :class:<code>Component</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.BaseBand.frequency">frequency</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Baseband carrier frequency in Hz.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.BaseBand.if_frequency">if_frequency</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Intermediate frequency in Hz.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.IQVoltageBias" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>IQVoltageBias</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.IQVoltageBias" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>IQ voltage bias correction string for a physical channel.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.IQVoltageBias.bias">bias</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Serialised bias value (format is hardware-specific).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.PhysicalChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>PhysicalChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.PhysicalChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            Component (qupboard_graphql.schemas.hardware_model.Component)" href="#qupboard_graphql.schemas.hardware_model.Component">Component</a></code></p>
+
+
+
+        <p>Physical channel connecting a qubit or resonator to the control hardware.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PhysicalChannel.uuid">uuid</span></code></td>
+            <td>
+                  <code><span title="uuid.UUID">UUID</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Unique identifier inherited from :class:<code>Component</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PhysicalChannel.name_index">name_index</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Hardware name index.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PhysicalChannel.baseband">baseband</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            BaseBand (qupboard_graphql.schemas.hardware_model.BaseBand)" href="#qupboard_graphql.schemas.hardware_model.BaseBand">BaseBand</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Associated :class:<code>BaseBand</code> oscillator.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PhysicalChannel.block_size">block_size</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Waveform block size in samples.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PhysicalChannel.iq_voltage_bias">iq_voltage_bias</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            IQVoltageBias (qupboard_graphql.schemas.hardware_model.IQVoltageBias)" href="#qupboard_graphql.schemas.hardware_model.IQVoltageBias">IQVoltageBias</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>IQ voltage bias correction.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PhysicalChannel.default_amplitude">default_amplitude</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Default output amplitude (hardware units).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PhysicalChannel.switch_box">switch_box</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Switch-box identifier string.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PhysicalChannel.swap_readout_iq">swap_readout_iq</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to swap I and Q for readout (resonator only).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.CalibratablePulse" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>CalibratablePulse</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>A parameterised pulse waveform used for qubit control.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratablePulse.waveform_type">waveform_type</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Waveform shape identifier (e.g. <code>"gaussian"</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratablePulse.width">width</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pulse duration in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratablePulse.amp">amp</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pulse amplitude.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratablePulse.phase">phase</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pulse phase in radians.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratablePulse.drag">drag</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DRAG correction coefficient.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratablePulse.rise">rise</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Rise-time parameter as a fraction of <em>width</em>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratablePulse.amp_setup">amp_setup</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Setup amplitude.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratablePulse.std_dev">std_dev</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Gaussian standard deviation in seconds.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.PulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>PulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.PulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            Component (qupboard_graphql.schemas.hardware_model.Component)" href="#qupboard_graphql.schemas.hardware_model.Component">Component</a></code></p>
+
+
+
+        <p>Base class for all pulse channels.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PulseChannel.uuid">uuid</span></code></td>
+            <td>
+                  <code><span title="uuid.UUID">UUID</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Unique identifier inherited from :class:<code>Component</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PulseChannel.frequency">frequency</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Carrier frequency in Hz (<code>NaN</code> when unset).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PulseChannel.imbalance">imbalance</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>IQ imbalance correction factor.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PulseChannel.phase_iq_offset">phase_iq_offset</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>IQ phase offset in radians.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.PulseChannel.scale">scale</span></code></td>
+            <td>
+                  <code><span title="complex">complex</span> | <span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Complex or real scale factor applied to waveform amplitudes.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.DrivePulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>DrivePulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.DrivePulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            PulseChannel (qupboard_graphql.schemas.hardware_model.PulseChannel)" href="#qupboard_graphql.schemas.hardware_model.PulseChannel">PulseChannel</a></code></p>
+
+
+
+        <p>Drive pulse channel used to apply single-qubit gates.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.DrivePulseChannel.pulse">pulse</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            CalibratablePulse (qupboard_graphql.schemas.hardware_model.CalibratablePulse)" href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse">CalibratablePulse</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Primary X-π/2 drive pulse.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.DrivePulseChannel.pulse_x_pi">pulse_x_pi</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            CalibratablePulse (qupboard_graphql.schemas.hardware_model.CalibratablePulse)" href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse">CalibratablePulse</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional X-π drive pulse (<code>None</code> when not calibrated).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.QubitPulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>QubitPulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            PulseChannel (qupboard_graphql.schemas.hardware_model.PulseChannel)" href="#qupboard_graphql.schemas.hardware_model.PulseChannel">PulseChannel</a></code></p>
+
+
+
+        <p>Marker base class for qubit-specific pulse channels.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.SecondStatePulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>SecondStatePulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.SecondStatePulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            QubitPulseChannel (qupboard_graphql.schemas.hardware_model.QubitPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannel">QubitPulseChannel</a></code></p>
+
+
+
+        <p>Pulse channel for driving the |1⟩→|2⟩ transition.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.SecondStatePulseChannel.active">active</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether second-state driving is enabled.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.SecondStatePulseChannel.delay">delay</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Delay before the pulse in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.SecondStatePulseChannel.pulse">pulse</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            CalibratablePulse (qupboard_graphql.schemas.hardware_model.CalibratablePulse)" href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse">CalibratablePulse</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional second-state pulse waveform.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.FreqShiftPulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>FreqShiftPulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.FreqShiftPulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            QubitPulseChannel (qupboard_graphql.schemas.hardware_model.QubitPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannel">QubitPulseChannel</a></code></p>
+
+
+
+        <p>Frequency-shift pulse channel for AC-Stark shift calibration.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.FreqShiftPulseChannel.active">active</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether frequency shifting is enabled.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.FreqShiftPulseChannel.amp">amp</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Frequency-shift amplitude.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.FreqShiftPulseChannel.phase">phase</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Frequency-shift phase in radians.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.CrossResonancePulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>CrossResonancePulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.CrossResonancePulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            QubitPulseChannel (qupboard_graphql.schemas.hardware_model.QubitPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannel">QubitPulseChannel</a></code></p>
+
+
+
+        <p>Cross-resonance (CR) pulse channel for two-qubit gate calibration.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CrossResonancePulseChannel.auxiliary_qubit">auxiliary_qubit</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Index of the auxiliary (target) qubit.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CrossResonancePulseChannel.zx_pi_4_pulse">zx_pi_4_pulse</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            CalibratablePulse (qupboard_graphql.schemas.hardware_model.CalibratablePulse)" href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse">CalibratablePulse</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional ZX-π/4 calibration pulse.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.CrossResonanceCancellationPulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>CrossResonanceCancellationPulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.CrossResonanceCancellationPulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            QubitPulseChannel (qupboard_graphql.schemas.hardware_model.QubitPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannel">QubitPulseChannel</a></code></p>
+
+
+
+        <p>Cross-resonance cancellation (CRC) pulse channel.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CrossResonanceCancellationPulseChannel.auxiliary_qubit">auxiliary_qubit</span></code></td>
+            <td>
+                  <code><span title="int">int</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Index of the auxiliary (target) qubit.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.ResetPulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>ResetPulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.ResetPulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            PulseChannel (qupboard_graphql.schemas.hardware_model.PulseChannel)" href="#qupboard_graphql.schemas.hardware_model.PulseChannel">PulseChannel</a></code></p>
+
+
+
+        <p>Reset pulse channel for returning a qubit or resonator to the ground state.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ResetPulseChannel.delay">delay</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Delay before the reset pulse in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ResetPulseChannel.pulse">pulse</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            CalibratablePulse (qupboard_graphql.schemas.hardware_model.CalibratablePulse)" href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse">CalibratablePulse</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Reset pulse waveform.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.QubitPulseChannels" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>QubitPulseChannels</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannels" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>Container for all pulse channels owned by a single qubit.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.QubitPulseChannels.drive">drive</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            DrivePulseChannel (qupboard_graphql.schemas.hardware_model.DrivePulseChannel)" href="#qupboard_graphql.schemas.hardware_model.DrivePulseChannel">DrivePulseChannel</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Drive pulse channel.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.QubitPulseChannels.second_state">second_state</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            SecondStatePulseChannel (qupboard_graphql.schemas.hardware_model.SecondStatePulseChannel)" href="#qupboard_graphql.schemas.hardware_model.SecondStatePulseChannel">SecondStatePulseChannel</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Second-state pulse channel.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.QubitPulseChannels.freq_shift">freq_shift</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            FreqShiftPulseChannel (qupboard_graphql.schemas.hardware_model.FreqShiftPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.FreqShiftPulseChannel">FreqShiftPulseChannel</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Frequency-shift pulse channel.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.QubitPulseChannels.reset">reset</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            ResetPulseChannel (qupboard_graphql.schemas.hardware_model.ResetPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.ResetPulseChannel">ResetPulseChannel</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Qubit reset pulse channel.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.QubitPulseChannels.cross_resonance_channels">cross_resonance_channels</span></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="int">int</span>, <a class="autorefs autorefs-internal" title="            CrossResonancePulseChannel (qupboard_graphql.schemas.hardware_model.CrossResonancePulseChannel)" href="#qupboard_graphql.schemas.hardware_model.CrossResonancePulseChannel">CrossResonancePulseChannel</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mapping of auxiliary-qubit index to
+:class:<code>CrossResonancePulseChannel</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.QubitPulseChannels.cross_resonance_cancellation_channels">cross_resonance_cancellation_channels</span></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="int">int</span>, <a class="autorefs autorefs-internal" title="            CrossResonanceCancellationPulseChannel (qupboard_graphql.schemas.hardware_model.CrossResonanceCancellationPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.CrossResonanceCancellationPulseChannel">CrossResonanceCancellationPulseChannel</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mapping of auxiliary-qubit index
+to :class:<code>CrossResonanceCancellationPulseChannel</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.ResonatorPulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>ResonatorPulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.ResonatorPulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            PulseChannel (qupboard_graphql.schemas.hardware_model.PulseChannel)" href="#qupboard_graphql.schemas.hardware_model.PulseChannel">PulseChannel</a></code></p>
+
+
+
+        <p>Marker base class for resonator-specific pulse channels.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.MeasurePulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>MeasurePulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.MeasurePulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            ResonatorPulseChannel (qupboard_graphql.schemas.hardware_model.ResonatorPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.ResonatorPulseChannel">ResonatorPulseChannel</a></code></p>
+
+
+
+        <p>Measure pulse channel that drives the readout resonator.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.MeasurePulseChannel.pulse">pulse</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            CalibratablePulse (qupboard_graphql.schemas.hardware_model.CalibratablePulse)" href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse">CalibratablePulse</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Measurement pulse waveform.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.CalibratableAcquire" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>CalibratableAcquire</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.CalibratableAcquire" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>Acquisition parameters for a readout resonator.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratableAcquire.delay">delay</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Acquisition delay after the measurement pulse in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratableAcquire.width">width</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Acquisition window width in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratableAcquire.sync">sync</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to synchronise acquisition across multiple channels.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.CalibratableAcquire.use_weights">use_weights</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to apply integration weights.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.AcquirePulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>AcquirePulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.AcquirePulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            ResonatorPulseChannel (qupboard_graphql.schemas.hardware_model.ResonatorPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.ResonatorPulseChannel">ResonatorPulseChannel</a></code></p>
+
+
+
+        <p>Acquire pulse channel that controls the ADC acquisition window.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.AcquirePulseChannel.acquire">acquire</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            CalibratableAcquire (qupboard_graphql.schemas.hardware_model.CalibratableAcquire)" href="#qupboard_graphql.schemas.hardware_model.CalibratableAcquire">CalibratableAcquire</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Acquisition parameters.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.MeasureAcquirePulseChannel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>MeasureAcquirePulseChannel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.MeasureAcquirePulseChannel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            MeasurePulseChannel (qupboard_graphql.schemas.hardware_model.MeasurePulseChannel)" href="#qupboard_graphql.schemas.hardware_model.MeasurePulseChannel">MeasurePulseChannel</a></code>, <code><a class="autorefs autorefs-internal" title="            AcquirePulseChannel (qupboard_graphql.schemas.hardware_model.AcquirePulseChannel)" href="#qupboard_graphql.schemas.hardware_model.AcquirePulseChannel">AcquirePulseChannel</a></code></p>
+
+
+
+        <p>Combined measure-and-acquire pulse channel retained for backwards compatibility.</p>
+<p>Earlier versions of the schema represented measurement and acquisition as a
+single combined channel.  The current schema separates them into
+:class:<code>MeasurePulseChannel</code> and :class:<code>AcquirePulseChannel</code> held inside a
+:class:<code>ResonatorPulseChannels</code> container.  This class is kept so that
+serialised payloads written against the old schema can still be deserialised;
+it should not be used for new code.</p>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.ResonatorPulseChannels" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>ResonatorPulseChannels</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.ResonatorPulseChannels" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>Container for all pulse channels owned by a single resonator.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ResonatorPulseChannels.measure">measure</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            MeasurePulseChannel (qupboard_graphql.schemas.hardware_model.MeasurePulseChannel)" href="#qupboard_graphql.schemas.hardware_model.MeasurePulseChannel">MeasurePulseChannel</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Measurement pulse channel.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ResonatorPulseChannels.acquire">acquire</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            AcquirePulseChannel (qupboard_graphql.schemas.hardware_model.AcquirePulseChannel)" href="#qupboard_graphql.schemas.hardware_model.AcquirePulseChannel">AcquirePulseChannel</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Acquisition pulse channel.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ResonatorPulseChannels.reset">reset</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            ResetPulseChannel (qupboard_graphql.schemas.hardware_model.ResetPulseChannel)" href="#qupboard_graphql.schemas.hardware_model.ResetPulseChannel">ResetPulseChannel</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Resonator reset pulse channel.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.Resonator" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Resonator</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.Resonator" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            Component (qupboard_graphql.schemas.hardware_model.Component)" href="#qupboard_graphql.schemas.hardware_model.Component">Component</a></code></p>
+
+
+
+        <p>Readout resonator coupled to a qubit.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Resonator.uuid">uuid</span></code></td>
+            <td>
+                  <code><span title="uuid.UUID">UUID</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Unique identifier inherited from :class:<code>Component</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Resonator.physical_channel">physical_channel</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            PhysicalChannel (qupboard_graphql.schemas.hardware_model.PhysicalChannel)" href="#qupboard_graphql.schemas.hardware_model.PhysicalChannel">PhysicalChannel</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Physical channel connected to the resonator.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Resonator.pulse_channels">pulse_channels</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            ResonatorPulseChannels (qupboard_graphql.schemas.hardware_model.ResonatorPulseChannels)" href="#qupboard_graphql.schemas.hardware_model.ResonatorPulseChannels">ResonatorPulseChannels</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Resonator pulse channels (measure, acquire, reset).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.XPi2Comp" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>XPi2Comp</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.XPi2Comp" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>X-π/2 gate phase compensation parameters.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.XPi2Comp.phase_comp_x_pi_2">phase_comp_x_pi_2</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Phase compensation value in radians.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.ZxPi4Comp" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>ZxPi4Comp</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.ZxPi4Comp" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>ZX-π/4 gate compensation parameters for a single CR pair.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ZxPi4Comp.pulse_precomp_target_zx_pi_4">pulse_precomp_target_zx_pi_4</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            CalibratablePulse (qupboard_graphql.schemas.hardware_model.CalibratablePulse)" href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse">CalibratablePulse</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional pre-compensation pulse.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ZxPi4Comp.pulse_postcomp_target_zx_pi_4">pulse_postcomp_target_zx_pi_4</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            CalibratablePulse (qupboard_graphql.schemas.hardware_model.CalibratablePulse)" href="#qupboard_graphql.schemas.hardware_model.CalibratablePulse">CalibratablePulse</a> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional post-compensation pulse.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ZxPi4Comp.phase_comp_target_zx_pi_4">phase_comp_target_zx_pi_4</span></code></td>
+            <td>
+                  <code><span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Target ZX-π/4 phase compensation in radians.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ZxPi4Comp.pulse_zx_pi_4_target_rotary_amp">pulse_zx_pi_4_target_rotary_amp</span></code></td>
+            <td>
+                  <code><span title="float">float</span> | None</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional rotary pulse amplitude.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ZxPi4Comp.precomp_active">precomp_active</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether pre-compensation is enabled.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ZxPi4Comp.postcomp_active">postcomp_active</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether post-compensation is enabled.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ZxPi4Comp.use_second_state">use_second_state</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to use the second excited state.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.ZxPi4Comp.use_rotary">use_rotary</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to use a rotary pulse.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.Qubit" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>Qubit</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.Qubit" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            Component (qupboard_graphql.schemas.hardware_model.Component)" href="#qupboard_graphql.schemas.hardware_model.Component">Component</a></code></p>
+
+
+
+        <p>Full calibration record for a single physical qubit.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Qubit.uuid">uuid</span></code></td>
+            <td>
+                  <code><span title="uuid.UUID">UUID</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Unique identifier inherited from :class:<code>Component</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Qubit.physical_channel">physical_channel</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            PhysicalChannel (qupboard_graphql.schemas.hardware_model.PhysicalChannel)" href="#qupboard_graphql.schemas.hardware_model.PhysicalChannel">PhysicalChannel</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Physical channel connected to the qubit drive line.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Qubit.pulse_channels">pulse_channels</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            QubitPulseChannels (qupboard_graphql.schemas.hardware_model.QubitPulseChannels)" href="#qupboard_graphql.schemas.hardware_model.QubitPulseChannels">QubitPulseChannels</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>All pulse channels owned by this qubit.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Qubit.resonator">resonator</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            Resonator (qupboard_graphql.schemas.hardware_model.Resonator)" href="#qupboard_graphql.schemas.hardware_model.Resonator">Resonator</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Coupled readout resonator.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Qubit.mean_z_map_args">mean_z_map_args</span></code></td>
+            <td>
+                  <code><span title="list">list</span>[<span title="complex">complex</span> | <span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Two-element list <code>[real, imag]</code> encoding the mean-Z
+state-discrimination mapping arguments.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Qubit.discriminator">discriminator</span></code></td>
+            <td>
+                  <code><span title="complex">complex</span> | <span title="float">float</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Complex or real threshold for state discrimination.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Qubit.direct_x_pi">direct_x_pi</span></code></td>
+            <td>
+                  <code><span title="bool">bool</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to use a direct X-π pulse instead of two X-π/2
+pulses.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Qubit.x_pi_2_comp">x_pi_2_comp</span></code></td>
+            <td>
+                  <code><a class="autorefs autorefs-internal" title="            XPi2Comp (qupboard_graphql.schemas.hardware_model.XPi2Comp)" href="#qupboard_graphql.schemas.hardware_model.XPi2Comp">XPi2Comp</a></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>X-π/2 gate phase compensation.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.Qubit.zx_pi_4_comp">zx_pi_4_comp</span></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="int">int</span>, <a class="autorefs autorefs-internal" title="            ZxPi4Comp (qupboard_graphql.schemas.hardware_model.ZxPi4Comp)" href="#qupboard_graphql.schemas.hardware_model.ZxPi4Comp">ZxPi4Comp</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mapping of auxiliary-qubit index to
+:class:<code>ZxPi4Comp</code> compensation data.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.schemas.hardware_model.HardwareModel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>HardwareModel</code>
+
+
+<a href="#qupboard_graphql.schemas.hardware_model.HardwareModel" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="pydantic.BaseModel">BaseModel</span></code></p>
+
+
+
+        <p>Top-level hardware model calibration record.</p>
+<p>This is the root schema object serialised to/from JSON for the REST API
+and mapped to/from the :class:<code>~qupboard_graphql.db.models.HardwareModelORM</code>
+tree in the database.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.HardwareModel.version">version</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Schema or calibration version string.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.HardwareModel.logical_connectivity">logical_connectivity</span></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <span title="list">list</span>[<span title="int">int</span>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mapping of qubit label to list of neighbour
+indices describing the device topology.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.HardwareModel.calibration_id">calibration_id</span></code></td>
+            <td>
+                  <code><span title="str">str</span></code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Identifier for the calibration run.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.schemas.hardware_model.HardwareModel.qubits">qubits</span></code></td>
+            <td>
+                  <code><span title="dict">dict</span>[<span title="str">str</span>, <a class="autorefs autorefs-internal" title="            Qubit (qupboard_graphql.schemas.hardware_model.Qubit)" href="#qupboard_graphql.schemas.hardware_model.Qubit">Qubit</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Mapping of qubit key (e.g. <code>"q0"</code>) to :class:<code>Qubit</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+<script type="module">
+  import mermaid from 'https://unpkg.com/mermaid@11/dist/mermaid.esm.min.mjs';
+  document.addEventListener('DOMContentLoaded', () => {
+    mermaid.initialize({ startOnLoad: true });
+  });
+</script>
+
+  </body>
+</html>

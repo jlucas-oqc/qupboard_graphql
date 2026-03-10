@@ -1,0 +1,3354 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="FastAPI service exposing quantum hardware model calibration data via REST and GraphQL">
+      
+      
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../repository/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.4">
+    
+    
+      
+        <title>Models - qupboard-graphql</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/stylesheets/main.484c7ddc.min.css">
+      
+        
+        <link rel="stylesheet" href="../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+      <link rel="stylesheet" href="../../assets/_mkdocstrings.css">
+    
+    <script>__md_scope=new URL("../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#orm-models" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../.." title="qupboard-graphql" class="md-header__button md-logo" aria-label="qupboard-graphql" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            qupboard-graphql
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Models
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a4 4 0 0 0-4 4 4 4 0 0 0 4 4 4 4 0 0 0 4-4 4 4 0 0 0-4-4m0 10a6 6 0 0 1-6-6 6 6 0 0 1 6-6 6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 18c-.89 0-1.74-.2-2.5-.55C11.56 16.5 13 14.42 13 12s-1.44-4.5-3.5-5.45C10.26 6.2 11.11 6 12 6a6 6 0 0 1 6 6 6 6 0 0 1-6 6m8-9.31V4h-4.69L12 .69 8.69 4H4v4.69L.69 12 4 15.31V20h4.69L12 23.31 15.31 20H20v-4.69L23.31 12z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/oqc/qupboard-graphql" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    oqc/qupboard-graphql
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../api/" class="md-tabs__link">
+          
+  
+  
+  API Reference
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../" class="md-tabs__link">
+          
+  
+  
+  Database
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../schemas/" class="md-tabs__link">
+          
+  
+  
+  Schemas
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../config/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Configuration
+
+      </a>
+    </li>
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../.." title="qupboard-graphql" class="md-nav__button md-logo" aria-label="qupboard-graphql" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    qupboard-graphql
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/oqc/qupboard-graphql" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    oqc/qupboard-graphql
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_2" >
+        
+          
+          <label class="md-nav__link" for="__nav_2" id="__nav_2_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    API Reference
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    API Reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/app/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Application
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/rest/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    REST
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/graphql/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GraphQL
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/graphql_types/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    GraphQL Types
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../api/root/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Root & Health
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <label class="md-nav__link" for="__nav_3" id="__nav_3_label" tabindex="">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Database
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Database
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Models
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        models
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models--table-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.HardwareModelORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HardwareModelORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.PhysicalChannelORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PhysicalChannelORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.CalibratablePulseORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CalibratablePulseORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.PulseChannelORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PulseChannelORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.CrossResonanceChannelORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CrossResonanceChannelORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ZxPi4CompORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZxPi4CompORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ResonatorORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResonatorORM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ResonatorORM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ResonatorORM.measure_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ResonatorORM.acquire_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        acquire_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ResonatorORM.reset_resonator_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset_resonator_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QubitORM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="QubitORM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM.drive_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        drive_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM.second_state_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        second_state_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM.freq_shift_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        freq_shift_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM.reset_qubit_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset_qubit_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../repository/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Repository
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../session/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Session
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mapper_to_orm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Pydantic → ORM
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../mapper_from_orm/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    ORM → Pydantic
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <label class="md-nav__link" for="__nav_4" id="__nav_4_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Schemas
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schemas/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Schemas
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../schemas/hardware_model/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hardware Model
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../config/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        models
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="models">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models--table-hierarchy" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Table hierarchy
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.HardwareModelORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        HardwareModelORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.PhysicalChannelORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PhysicalChannelORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.CalibratablePulseORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CalibratablePulseORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.PulseChannelORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        PulseChannelORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.CrossResonanceChannelORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        CrossResonanceChannelORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ZxPi4CompORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ZxPi4CompORM
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ResonatorORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        ResonatorORM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="ResonatorORM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ResonatorORM.measure_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        measure_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ResonatorORM.acquire_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        acquire_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.ResonatorORM.reset_resonator_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset_resonator_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        QubitORM
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="QubitORM">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM.drive_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        drive_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM.second_state_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        second_state_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM.freq_shift_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        freq_shift_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#qupboard_graphql.db.models.QubitORM.reset_qubit_channel" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        reset_qubit_channel
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="orm-models">ORM Models<a class="headerlink" href="#orm-models" title="Permanent link">&para;</a></h1>
+
+
+<div class="doc doc-object doc-module">
+
+
+
+<h2 id="qupboard_graphql.db.models" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-module"></code>            <code>qupboard_graphql.db.models</code>
+
+
+<a href="#qupboard_graphql.db.models" class="headerlink" title="Permanent link">&para;</a></h2>
+
+    <div class="doc doc-contents first">
+
+        <p>SQLAlchemy ORM models mirroring the Pydantic HardwareModel schema.</p>
+<h4 id="qupboard_graphql.db.models--table-hierarchy">Table hierarchy<a class="headerlink" href="#qupboard_graphql.db.models--table-hierarchy" title="Permanent link">&para;</a></h4>
+<p>hardware_models
+  └─ qubits  (FK → hardware_models)
+       ├─ physical_channels        (FK → qubits OR resonators, channel_kind = 'qubit' | 'resonator')
+       │    baseband and IQ-bias columns inlined here
+       ├─ pulse_channels           (FK → qubits OR resonators, channel_role discriminator)
+       │    channel_role values:
+       │      'drive'            – qubit drive channel
+       │      'second_state'     – second-state pulse channel (ss_active, ss_delay)
+       │      'freq_shift'       – freq-shift pulse channel   (fs_active, fs_amp, fs_phase)
+       │      'measure'          – resonator measure channel
+       │      'acquire'          – resonator acquire channel  (acq_delay/width/sync/use_weights)
+       │      'reset_qubit'      – qubit reset channel        (reset_delay)
+       │      'reset_resonator'  – resonator reset channel    (reset_delay)
+       │    └─ calibratable_pulses (owner_uuid → pulse_channels.id, pulse_role discriminator)
+       ├─ cross_resonance_channels (FK → qubits, role = 'cr' | 'crc')
+       │    └─ calibratable_pulses (pulse_role = 'cr')
+       ├─ zx_pi_4_comps            (FK → qubits, one per CR pair)
+       │    └─ calibratable_pulses (pulse_role = 'zx_precomp' | 'zx_postcomp', nullable)
+       │    phase_comp_x_pi_2 inlined on qubits
+       └─ resonators               (FK → qubits, one-to-one)
+            ├─ physical_channels   (FK → resonators, channel_kind = 'resonator')
+            └─ pulse_channels      (FK → resonators, channel_role = 'measure' | 'acquire' | 'reset_resonator')</p>
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.db.models.HardwareModelORM" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>HardwareModelORM</code>
+
+
+<a href="#qupboard_graphql.db.models.HardwareModelORM" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><a class="autorefs autorefs-internal" title="            RepositoryMixin (qupboard_graphql.db.repository.RepositoryMixin)" href="../repository/#qupboard_graphql.db.repository.RepositoryMixin">RepositoryMixin</a></code>, <code><span title="qupboard_graphql.db.database.Base">Base</span></code></p>
+
+
+
+        <p>Top-level hardware model record containing version and qubit calibration data.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.HardwareModelORM.id">id</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Auto-generated UUID primary key.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.HardwareModelORM.version">version</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Schema or calibration version string.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.HardwareModelORM.calibration_id">calibration_id</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Identifier for the calibration run.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.HardwareModelORM.logical_connectivity">logical_connectivity</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>JSON-encoded mapping of qubit label to list of
+neighbour indices.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.HardwareModelORM.qubits">qubits</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="            QubitORM (qupboard_graphql.db.models.QubitORM)" href="#qupboard_graphql.db.models.QubitORM">QubitORM</a>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>One-to-many collection of associated :class:<code>QubitORM</code> rows.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.db.models.PhysicalChannelORM" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>PhysicalChannelORM</code>
+
+
+<a href="#qupboard_graphql.db.models.PhysicalChannelORM" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="qupboard_graphql.db.database.Base">Base</span></code></p>
+
+
+
+        <p>Unified physical channel row covering both qubit and resonator channels.</p>
+<p>A single table (<code>physical_channels</code>) stores physical channels for both
+qubits and resonators, discriminated by <em>channel_kind</em>.  The inlined
+<code>BaseBand</code> and <code>IQVoltageBias</code> Pydantic fields are flattened into
+columns here rather than in separate tables.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.uuid">uuid</span></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>UUID primary key (shared with the Pydantic schema's UUID).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.channel_kind">channel_kind</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>"qubit"</code> or <code>"resonator"</code> — identifies the owner type.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.name_index">name_index</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Hardware name index used to address the physical port.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.block_size">block_size</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Waveform block size in samples.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.default_amplitude">default_amplitude</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Default output amplitude in hardware units.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.switch_box">switch_box</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Switch-box identifier string.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.swap_readout_iq">swap_readout_iq</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to swap I and Q for readout (resonator only).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.baseband_uuid">baseband_uuid</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>UUID of the inlined baseband oscillator.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.baseband_frequency">baseband_frequency</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Baseband carrier frequency in Hz.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.baseband_if_frequency">baseband_if_frequency</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Intermediate frequency in Hz.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.iq_bias">iq_bias</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Serialised IQ voltage bias correction string.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.qubit_uuid">qubit_uuid</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>FK to :class:<code>QubitORM</code> (set when <code>channel_kind = "qubit"</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.resonator_uuid">resonator_uuid</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>FK to :class:<code>ResonatorORM</code> (set when <code>channel_kind = "resonator"</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.qubit">qubit</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            QubitORM (qupboard_graphql.db.models.QubitORM)" href="#qupboard_graphql.db.models.QubitORM">QubitORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Relationship to the owning :class:<code>QubitORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PhysicalChannelORM.resonator">resonator</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            ResonatorORM (qupboard_graphql.db.models.ResonatorORM)" href="#qupboard_graphql.db.models.ResonatorORM">ResonatorORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Relationship to the owning :class:<code>ResonatorORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.db.models.CalibratablePulseORM" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>CalibratablePulseORM</code>
+
+
+<a href="#qupboard_graphql.db.models.CalibratablePulseORM" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="qupboard_graphql.db.database.Base">Base</span></code></p>
+
+
+
+        <p>A single calibratable waveform pulse stored in the <code>calibratable_pulses</code> table.</p>
+<p>Pulses are owned by a channel row identified by <em>owner_uuid</em> and are
+further distinguished by the <em>pulse_role</em> discriminator column.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.id">id</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Auto-increment integer primary key.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.waveform_type">waveform_type</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Waveform shape identifier (e.g. <code>"gaussian"</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.width">width</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pulse duration in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.amp">amp</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pulse amplitude.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.phase">phase</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Pulse phase in radians.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.drag">drag</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>DRAG correction coefficient.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.rise">rise</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Rise-time parameter (fraction of width).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.amp_setup">amp_setup</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Setup amplitude.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.std_dev">std_dev</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Gaussian standard deviation.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.owner_uuid">owner_uuid</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>UUID of the owning channel row.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CalibratablePulseORM.pulse_role">pulse_role</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Discriminator string identifying which relationship slot
+this pulse fills (e.g. <code>"drive"</code>, <code>"drive_x_pi"</code>, <code>"cr"</code>).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.db.models.PulseChannelORM" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>PulseChannelORM</code>
+
+
+<a href="#qupboard_graphql.db.models.PulseChannelORM" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="qupboard_graphql.db.database.Base">Base</span></code></p>
+
+
+
+        <p>Unified pulse channel row covering all channel roles.</p>
+<p>A single table (<code>pulse_channels</code>) stores every role of pulse channel:
+drive, second_state, freq_shift, measure, acquire, reset_qubit, and
+reset_resonator.  Role-specific columns are <code>NULL</code> for rows of a
+different role.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.uuid">uuid</span></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>UUID primary key.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.channel_role">channel_role</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Role discriminator (<code>"drive"</code>, <code>"second_state"</code>,
+<code>"freq_shift"</code>, <code>"measure"</code>, <code>"acquire"</code>,
+<code>"reset_qubit"</code>, <code>"reset_resonator"</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.frequency">frequency</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Carrier frequency in Hz (<code>None</code> encodes NaN).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.imbalance">imbalance</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>IQ imbalance correction factor.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.phase_iq_offset">phase_iq_offset</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>IQ phase offset in radians.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.scale_real">scale_real</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Real part of the complex scale factor.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.scale_imag">scale_imag</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Imaginary part of the complex scale factor.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.ss_active">ss_active</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>second_state</em> only) Whether second-state driving is active.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.ss_delay">ss_delay</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>second_state</em> only) Second-state delay in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.fs_active">fs_active</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>freq_shift</em> only) Whether frequency shifting is active.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.fs_amp">fs_amp</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>freq_shift</em> only) Frequency-shift amplitude.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.fs_phase">fs_phase</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>freq_shift</em> only) Frequency-shift phase.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.acq_delay">acq_delay</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>acquire</em> only) Acquisition delay in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.acq_width">acq_width</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>acquire</em> only) Acquisition window width in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.acq_sync">acq_sync</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>acquire</em> only) Whether to sync the acquisition.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.acq_use_weights">acq_use_weights</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>acquire</em> only) Whether to use integration weights.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.reset_delay">reset_delay</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>(<em>reset_qubit/reset_resonator</em> only) Reset delay in seconds.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.qubit_uuid">qubit_uuid</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>FK to :class:<code>QubitORM</code> (set for qubit-owned channels).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.resonator_uuid">resonator_uuid</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>FK to :class:<code>ResonatorORM</code> (set for resonator channels).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.pulse">pulse</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            CalibratablePulseORM (qupboard_graphql.db.models.CalibratablePulseORM)" href="#qupboard_graphql.db.models.CalibratablePulseORM">CalibratablePulseORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Primary pulse waveform (most roles).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.PulseChannelORM.pulse_x_pi">pulse_x_pi</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            CalibratablePulseORM (qupboard_graphql.db.models.CalibratablePulseORM)" href="#qupboard_graphql.db.models.CalibratablePulseORM">CalibratablePulseORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>X-π pulse waveform (drive role only).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.db.models.CrossResonanceChannelORM" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>CrossResonanceChannelORM</code>
+
+
+<a href="#qupboard_graphql.db.models.CrossResonanceChannelORM" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="qupboard_graphql.db.database.Base">Base</span></code></p>
+
+
+
+        <p>Unified cross-resonance channel row covering both CR and CRC channels.</p>
+<p>A single table (<code>cross_resonance_channels</code>) stores both
+CrossResonancePulseChannel (role <code>"cr"</code>) and
+CrossResonanceCancellationPulseChannel (role <code>"crc"</code>) rows.
+The <code>zx_pi_4_pulse</code> relationship is only populated for <code>"cr"</code> rows.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.uuid">uuid</span></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>UUID primary key.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.role">role</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p><code>"cr"</code> for a cross-resonance channel or <code>"crc"</code> for a
+cross-resonance cancellation channel.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.auxiliary_qubit">auxiliary_qubit</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Index of the auxiliary (target) qubit in the CR pair.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.frequency">frequency</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Carrier frequency in Hz (<code>None</code> encodes NaN).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.imbalance">imbalance</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>IQ imbalance correction factor.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.phase_iq_offset">phase_iq_offset</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>IQ phase offset in radians.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.scale_real">scale_real</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Real part of the complex scale factor.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.scale_imag">scale_imag</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Imaginary part of the complex scale factor.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.qubit_uuid">qubit_uuid</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>FK to the owning :class:<code>QubitORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.qubit">qubit</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            QubitORM (qupboard_graphql.db.models.QubitORM)" href="#qupboard_graphql.db.models.QubitORM">QubitORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Relationship to the owning :class:<code>QubitORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.CrossResonanceChannelORM.zx_pi_4_pulse">zx_pi_4_pulse</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            CalibratablePulseORM (qupboard_graphql.db.models.CalibratablePulseORM)" href="#qupboard_graphql.db.models.CalibratablePulseORM">CalibratablePulseORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>ZX-π/4 calibration pulse (CR role only).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.db.models.ZxPi4CompORM" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>ZxPi4CompORM</code>
+
+
+<a href="#qupboard_graphql.db.models.ZxPi4CompORM" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="qupboard_graphql.db.database.Base">Base</span></code></p>
+
+
+
+        <p>ZX-π/4 compensation element associated with a specific auxiliary qubit.</p>
+<p>Each row represents the calibration data for one CR-pair compensation,
+keyed by <em>auxiliary_qubit</em> index.  Optional pre- and post-compensation
+pulses are stored as related :class:<code>CalibratablePulseORM</code> rows.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.uuid">uuid</span></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Auto-generated UUID primary key.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.auxiliary_qubit">auxiliary_qubit</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="int">int</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Index of the auxiliary (control) qubit in the CR pair.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.phase_comp_target_zx_pi_4">phase_comp_target_zx_pi_4</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Target ZX-π/4 phase compensation.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.pulse_zx_pi_4_target_rotary_amp">pulse_zx_pi_4_target_rotary_amp</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional rotary pulse amplitude.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.precomp_active">precomp_active</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether pre-compensation is enabled.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.postcomp_active">postcomp_active</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether post-compensation is enabled.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.use_second_state">use_second_state</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to use the second excited state.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.use_rotary">use_rotary</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to use a rotary pulse.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.qubit_uuid">qubit_uuid</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>FK to the owning :class:<code>QubitORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.qubit">qubit</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            QubitORM (qupboard_graphql.db.models.QubitORM)" href="#qupboard_graphql.db.models.QubitORM">QubitORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Relationship to the owning :class:<code>QubitORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.pulse_precomp">pulse_precomp</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            CalibratablePulseORM (qupboard_graphql.db.models.CalibratablePulseORM)" href="#qupboard_graphql.db.models.CalibratablePulseORM">CalibratablePulseORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional pre-compensation :class:<code>CalibratablePulseORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ZxPi4CompORM.pulse_postcomp">pulse_postcomp</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            CalibratablePulseORM (qupboard_graphql.db.models.CalibratablePulseORM)" href="#qupboard_graphql.db.models.CalibratablePulseORM">CalibratablePulseORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Optional post-compensation :class:<code>CalibratablePulseORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.db.models.ResonatorORM" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>ResonatorORM</code>
+
+
+<a href="#qupboard_graphql.db.models.ResonatorORM" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="qupboard_graphql.db.database.Base">Base</span></code></p>
+
+
+
+        <p>Readout resonator coupled one-to-one with a :class:<code>QubitORM</code>.</p>
+<p>Holds the resonator's physical channel and its three pulse channels
+(measure, acquire, reset_resonator).</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ResonatorORM.uuid">uuid</span></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>UUID primary key (shared with the Pydantic schema's UUID).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ResonatorORM.qubit_uuid">qubit_uuid</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>FK to the parent :class:<code>QubitORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ResonatorORM.qubit">qubit</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            QubitORM (qupboard_graphql.db.models.QubitORM)" href="#qupboard_graphql.db.models.QubitORM">QubitORM</a>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Relationship to the parent :class:<code>QubitORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ResonatorORM.physical_channel">physical_channel</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            PhysicalChannelORM (qupboard_graphql.db.models.PhysicalChannelORM)" href="#qupboard_graphql.db.models.PhysicalChannelORM">PhysicalChannelORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Single :class:<code>PhysicalChannelORM</code> with
+<code>channel_kind = "resonator"</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.ResonatorORM.pulse_channels">pulse_channels</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="            PulseChannelORM (qupboard_graphql.db.models.PulseChannelORM)" href="#qupboard_graphql.db.models.PulseChannelORM">PulseChannelORM</a>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>All resonator pulse channels (measure, acquire,
+reset_resonator).</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="qupboard_graphql.db.models.ResonatorORM.measure_channel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">measure_channel</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#qupboard_graphql.db.models.ResonatorORM.measure_channel" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the measure pulse channel, or <code>None</code> if absent.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="qupboard_graphql.db.models.ResonatorORM.acquire_channel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">acquire_channel</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#qupboard_graphql.db.models.ResonatorORM.acquire_channel" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the acquire pulse channel, or <code>None</code> if absent.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="qupboard_graphql.db.models.ResonatorORM.reset_resonator_channel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">reset_resonator_channel</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#qupboard_graphql.db.models.ResonatorORM.reset_resonator_channel" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the resonator reset pulse channel, or <code>None</code> if absent.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-class">
+
+
+
+<h3 id="qupboard_graphql.db.models.QubitORM" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-class"></code>            <code>QubitORM</code>
+
+
+<a href="#qupboard_graphql.db.models.QubitORM" class="headerlink" title="Permanent link">&para;</a></h3>
+
+
+    <div class="doc doc-contents ">
+            <p class="doc doc-class-bases">
+              Bases: <code><span title="qupboard_graphql.db.database.Base">Base</span></code></p>
+
+
+
+        <p>ORM representation of a single qubit and its full calibration payload.</p>
+<p>Owns a physical channel, multiple pulse channels (drive, second_state,
+freq_shift, reset_qubit), cross-resonance channels, ZX-π/4 compensation
+entries, and a one-to-one resonator.</p>
+
+
+<p><span class="doc-section-title">Attributes:</span></p>
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Type</th>
+          <th>Description</th>
+        </tr>
+      </thead>
+      <tbody>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.uuid">uuid</span></code></td>
+            <td>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>UUID primary key.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.qubit_key">qubit_key</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>String key used to identify the qubit within the model
+(e.g. <code>"q0"</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.mean_z_map_args">mean_z_map_args</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="str">str</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>JSON-encoded two-element list <code>[real, imag]</code>
+representing the mean-Z mapping arguments.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.discriminator_real">discriminator_real</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Real part of the state-discrimination threshold.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.discriminator_imag">discriminator_imag</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Imaginary part of the state-discrimination threshold.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.direct_x_pi">direct_x_pi</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="bool">bool</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Whether to use a direct X-π pulse.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.phase_comp_x_pi_2">phase_comp_x_pi_2</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="float">float</span>]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>X-π/2 phase compensation value.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.hardware_model_id">hardware_model_id</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="uuid.UUID">UUID</span> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>FK to the parent :class:<code>HardwareModelORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.hardware_model">hardware_model</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            HardwareModelORM (qupboard_graphql.db.models.HardwareModelORM)" href="#qupboard_graphql.db.models.HardwareModelORM">HardwareModelORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Relationship to the parent :class:<code>HardwareModelORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.physical_channel">physical_channel</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            PhysicalChannelORM (qupboard_graphql.db.models.PhysicalChannelORM)" href="#qupboard_graphql.db.models.PhysicalChannelORM">PhysicalChannelORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>Single :class:<code>PhysicalChannelORM</code> with
+<code>channel_kind = "qubit"</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.pulse_channels">pulse_channels</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="            PulseChannelORM (qupboard_graphql.db.models.PulseChannelORM)" href="#qupboard_graphql.db.models.PulseChannelORM">PulseChannelORM</a>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>All qubit-owned pulse channels.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.resonator">resonator</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<a class="autorefs autorefs-internal" title="            ResonatorORM (qupboard_graphql.db.models.ResonatorORM)" href="#qupboard_graphql.db.models.ResonatorORM">ResonatorORM</a> | None]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>One-to-one :class:<code>ResonatorORM</code>.</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.cross_resonance_channels">cross_resonance_channels</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="            CrossResonanceChannelORM (qupboard_graphql.db.models.CrossResonanceChannelORM)" href="#qupboard_graphql.db.models.CrossResonanceChannelORM">CrossResonanceChannelORM</a>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>CR pulse channels (role <code>"cr"</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.cross_resonance_cancellation_channels">cross_resonance_cancellation_channels</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="            CrossResonanceChannelORM (qupboard_graphql.db.models.CrossResonanceChannelORM)" href="#qupboard_graphql.db.models.CrossResonanceChannelORM">CrossResonanceChannelORM</a>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>CRC pulse channels (role <code>"crc"</code>).</p>
+              </div>
+            </td>
+          </tr>
+          <tr class="doc-section-item">
+            <td><code><span title="qupboard_graphql.db.models.QubitORM.zx_pi_4_comps">zx_pi_4_comps</span></code></td>
+            <td>
+                  <code><span title="sqlalchemy.orm.Mapped">Mapped</span>[<span title="list">list</span>[<a class="autorefs autorefs-internal" title="            ZxPi4CompORM (qupboard_graphql.db.models.ZxPi4CompORM)" href="#qupboard_graphql.db.models.ZxPi4CompORM">ZxPi4CompORM</a>]]</code>
+            </td>
+            <td>
+              <div class="doc-md-description">
+                <p>ZX-π/4 compensation rows.</p>
+              </div>
+            </td>
+          </tr>
+      </tbody>
+    </table>
+
+
+
+
+
+
+
+
+
+
+
+<div class="doc doc-children">
+
+
+
+
+
+
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="qupboard_graphql.db.models.QubitORM.drive_channel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">drive_channel</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#qupboard_graphql.db.models.QubitORM.drive_channel" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the drive pulse channel, or <code>None</code> if absent.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="qupboard_graphql.db.models.QubitORM.second_state_channel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">second_state_channel</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#qupboard_graphql.db.models.QubitORM.second_state_channel" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the second-state pulse channel, or <code>None</code> if absent.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="qupboard_graphql.db.models.QubitORM.freq_shift_channel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">freq_shift_channel</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#qupboard_graphql.db.models.QubitORM.freq_shift_channel" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the frequency-shift pulse channel, or <code>None</code> if absent.</p>
+
+    </div>
+
+</div>
+
+<div class="doc doc-object doc-attribute">
+
+
+
+<h4 id="qupboard_graphql.db.models.QubitORM.reset_qubit_channel" class="doc doc-heading">
+<code class="doc-symbol doc-symbol-heading doc-symbol-attribute"></code>            <code class="highlight language-python"><span class="n">reset_qubit_channel</span></code>
+
+  <span class="doc doc-labels">
+      <small class="doc doc-label doc-label-property"><code>property</code></small>
+  </span>
+
+<a href="#qupboard_graphql.db.models.QubitORM.reset_qubit_channel" class="headerlink" title="Permanent link">&para;</a></h4>
+
+
+    <div class="doc doc-contents ">
+
+        <p>Return the qubit reset pulse channel, or <code>None</code> if absent.</p>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+  </div>
+
+    </div>
+
+</div>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../..", "features": ["navigation.tabs", "navigation.sections", "navigation.top", "search.highlight", "content.code.copy"], "search": "../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+
+      <script src="../../assets/javascripts/bundle.79ae519e.min.js"></script>
+      
+    
+<script type="module">
+  import mermaid from 'https://unpkg.com/mermaid@11/dist/mermaid.esm.min.mjs';
+  document.addEventListener('DOMContentLoaded', () => {
+    mermaid.initialize({ startOnLoad: true });
+  });
+</script>
+
+  </body>
+</html>
